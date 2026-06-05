@@ -1,0 +1,22 @@
+[
+    {
+        "titulo": "DAC",
+        "tipo": "trabalho academico",
+        "prazo": "22/07/2026",
+        "prioridade": "alta",
+        "duracao_estimada": 5.0,
+        "descricao": "Em grupo",
+        "subtarefas_concluidas": [],
+        "concluida": false
+    },
+    {
+        "titulo": "Logica Aplicada",
+        "tipo": "trabalho academico",
+        "prazo": "16/06/2026",
+        "prioridade": "alta",
+        "duracao_estimada": 0.5,
+        "descricao": "dadada",
+        "subtarefas_concluidas": [],
+        "concluida": false
+    }
+]

@@ -1,0 +1,26 @@
+[
+    {
+        "titulo": "Fazer trabalho acadêmico de Lógica Aplicada",
+        "tipo": "trabalho academico",
+        "prazo": "15/06/2026",
+        "prioridade": "alta",
+        "duracao_estimada": 8,
+        "descricao": "Criar paper e protótipo sobre planejador autônomo em IA."
+    },
+    {
+        "titulo": "Estudar para prova de algoritmos",
+        "tipo": "estudar para prova",
+        "prazo": "10/06/2026",
+        "prioridade": "media",
+        "duracao_estimada": 4,
+        "descricao": "Revisar estruturas condicionais, laços e listas."
+    },
+    {
+        "titulo": "Preparar apresentação do projeto",
+        "tipo": "apresentacao",
+        "prazo": "18/06/2026",
+        "prioridade": "alta",
+        "duracao_estimada": 3,
+        "descricao": "Montar slides e roteiro para explicar o sistema."
+    }
+]
