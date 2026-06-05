@@ -6,8 +6,19 @@
         "prioridade": "alta",
         "duracao_estimada": 5.0,
         "descricao": "Em grupo",
-        "subtarefas_concluidas": [],
-        "concluida": false
+        "subtarefas_concluidas": [
+            "Entender o tema proposto.",
+            "Definir problema de pesquisa.",
+            "Organizar estrutura do trabalho.",
+            "Buscar referências bibliográficas.",
+            "Escrever introdução.",
+            "Escrever fundamentação teórica.",
+            "Descrever metodologia.",
+            "Desenvolver ou explicar protótipo.",
+            "Analisar resultados.",
+            "Revisar e entregar."
+        ],
+        "concluida": true
     },
     {
         "titulo": "Logica Aplicada",
