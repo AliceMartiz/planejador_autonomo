@@ -30,6 +30,7 @@ https://github.com/AliceMartiz/planejador_autonomo
 - [Objetivo](#objetivo)
 - [Relação com Lógica Aplicada e IA](#relação-com-lógica-aplicada-e-ia)
 - [Funcionalidades](#funcionalidades)
+- [Interface para apresentação acadêmica](#interface-para-apresentação-acadêmica)
 - [Tecnologias utilizadas](#tecnologias-utilizadas)
 - [Estrutura do projeto](#estrutura-do-projeto)
 - [Como executar](#como-executar)
@@ -141,6 +142,17 @@ A aplicação possui as seguintes funcionalidades:
 
 ---
 
+## Interface para apresentação acadêmica
+
+A interface Streamlit foi organizada para uso em apresentações acadêmicas,
+com cabeçalho explicativo, barra lateral, formulário compacto, abas para
+separar os fluxos e componentes responsivos para telas de notebook e celular.
+
+O tema visual fica em `.streamlit/config.toml` e utiliza cores discretas,
+contraste adequado e uma identidade coerente com o contexto acadêmico.
+
+---
+
 ## Tecnologias utilizadas
 
 - **Python 3**: linguagem principal do projeto;
@@ -157,6 +169,8 @@ A aplicação possui as seguintes funcionalidades:
 ```text
 planejador_autonomo/
 │
+├── .streamlit/
+│   └── config.toml          # Tema visual usado pelo Streamlit
 ├── app.py                  # Interface visual com Streamlit
 ├── main.py                 # Interface de terminal
 ├── models.py               # Modelos de dados do sistema
@@ -216,10 +230,10 @@ pip install -r requirements.txt
 ### 4. Executar a interface visual
 
 ```bash
-streamlit run app.py
+python -m streamlit run app.py
 ```
 
-Alternativa no Windows, caso o comando `streamlit` não seja reconhecido:
+Alternativa no Windows:
 
 ```powershell
 py -m streamlit run app.py
