@@ -547,9 +547,10 @@ Projeto desenvolvido para a disciplina de **Lógica Aplicada**.
 Integrantes:
 
 - Alice Martinez
-- Nome do(a) integrante 2
-- Nome do(a) integrante 3
-- Nome do(a) integrante 4
+- Ana Claara Peres
+- Caetano
+- Guilherme Ojeda
+- Renzo
 
 Professor:
 
