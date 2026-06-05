@@ -31,6 +31,7 @@ https://github.com/AliceMartiz/planejador_autonomo
 - [Relação com Lógica Aplicada e IA](#relação-com-lógica-aplicada-e-ia)
 - [Funcionalidades](#funcionalidades)
 - [Interface para apresentação acadêmica](#interface-para-apresentação-acadêmica)
+- [Edição manual das subtarefas](#edição-manual-das-subtarefas)
 - [Tecnologias utilizadas](#tecnologias-utilizadas)
 - [Estrutura do projeto](#estrutura-do-projeto)
 - [Como executar](#como-executar)
@@ -134,6 +135,9 @@ A aplicação possui as seguintes funcionalidades:
 - ordenação das tarefas por prazo, pontuação, prioridade ou duração;
 - exclusão de tarefas;
 - marcação de subtarefas como concluídas;
+- edição e reposicionamento manual de subtarefas;
+- inserção de novas etapas em uma posição específica;
+- exclusão de subtarefas com confirmação;
 - marcação de tarefa como concluída quando todas as subtarefas forem finalizadas;
 - armazenamento local em JSON;
 - interface de terminal;
@@ -150,6 +154,22 @@ separar os fluxos e componentes responsivos para telas de notebook e celular.
 
 O tema visual fica em `.streamlit/config.toml` e utiliza cores discretas,
 contraste adequado e uma identidade coerente com o contexto acadêmico.
+
+---
+
+## Edição manual das subtarefas
+
+O planejador continua gerando automaticamente uma sequência inicial de
+etapas, mas o usuário pode refinar esse plano conforme a necessidade.
+
+Na janela do planejamento é possível editar uma subtarefa, alterar sua
+posição, excluí-la ou adicionar uma nova etapa logo abaixo de qualquer item.
+A lista é renumerada automaticamente e as personalizações são salvas junto
+com a tarefa no arquivo JSON.
+
+Essa interação reforça a proposta de planejamento assistido: o sistema aplica
+as regras iniciais e o usuário adapta a decomposição do problema ao contexto
+real da atividade.
 
 ---
 
@@ -176,6 +196,7 @@ planejador_autonomo/
 ├── models.py               # Modelos de dados do sistema
 ├── planner.py              # Regras lógicas e geração do plano
 ├── storage.py              # Salvamento e carregamento em JSON
+├── ui_subtarefas.py        # Operações de edição das subtarefas
 ├── validators.py           # Validação e normalização de dados
 ├── sample_data.json        # Exemplos de tarefas
 ├── tarefas.json            # Tarefas salvas pelo usuário
@@ -475,34 +496,35 @@ Exemplos de cenários:
 
 ---
 
-## Fluxograma
+## Fluxogramas
 
-O fluxograma será incluído posteriormente.
+Os fluxogramas abaixo representam a lógica geral do sistema, a etapa de planejamento e o processo de persistência dos dados em JSON.
 
-Sugestão de fluxo para representar:
+O projeto segue a proposta de decompor uma tarefa complexa em subtarefas menores, aplicando regras lógicas para classificar urgência, calcular pontuação e organizar uma sequência de execução.
 
-```text
-Início
-  ↓
-Usuário informa tarefa
-  ↓
-Sistema valida os dados
-  ↓
-Sistema identifica o tipo da tarefa
-  ↓
-Sistema calcula dias restantes
-  ↓
-Sistema classifica urgência
-  ↓
-Sistema calcula pontuação
-  ↓
-Sistema gera subtarefas
-  ↓
-Sistema ordena subtarefas
-  ↓
-Sistema exibe plano e justificativa
-  ↓
-Fim
+### Fluxograma geral do sistema
+
+<p align="center">
+  <img src="assets/fluxograma_geral_planejador_autonomo.svg" alt="Fluxograma geral do Planejador Autônomo Acadêmico" width="700">
+</p>
+
+<details>
+<summary>Fluxograma da lógica de planejamento</summary>
+
+<p align="center">
+  <img src="assets/fluxograma_logica_planejamento.svg" alt="Fluxograma da lógica de planejamento" width="700">
+</p>
+
+</details>
+
+<details>
+<summary>Fluxograma de salvamento e carregamento JSON</summary>
+
+<p align="center">
+  <img src="assets/fluxograma_json_salvamento.svg" alt="Fluxograma de salvamento e carregamento JSON" width="700">
+</p>
+
+</details>
 ```
 
 ---
