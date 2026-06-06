@@ -1,5 +1,6 @@
 """Testes das interações compartilhadas pelas interfaces."""
 
+from datetime import date
 from pathlib import Path
 from unittest.mock import patch
 import sys
@@ -8,7 +9,12 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from app import ordenar_tarefas, todas_subtarefas_concluidas
+from ui_tarefas import (
+    filtrar_tarefas,
+    ordenar_tarefas,
+    remover_tarefas_terminadas,
+    todas_subtarefas_concluidas,
+)
 from main import excluir_tarefa
 from models import Tarefa
 from planner import gerar_plano
@@ -87,6 +93,73 @@ class TestOrdenacaoTarefas(unittest.TestCase):
         ordenadas = ordenar_tarefas(self.tarefas, "Maior duração")
 
         self.assertEqual(ordenadas[0][1].titulo, "Longa")
+
+
+class TestFiltroTarefas(unittest.TestCase):
+    """Testa os filtros por conclusão e atraso."""
+
+    def setUp(self):
+        self.tarefas = [
+            Tarefa(
+                titulo="Terminada",
+                tipo="personalizada",
+                prazo="01/06/2026",
+                prioridade="media",
+                duracao_estimada=2,
+                concluida=True,
+            ),
+            Tarefa(
+                titulo="Atrasada",
+                tipo="personalizada",
+                prazo="05/06/2026",
+                prioridade="alta",
+                duracao_estimada=3,
+            ),
+            Tarefa(
+                titulo="No prazo",
+                tipo="personalizada",
+                prazo="20/06/2026",
+                prioridade="baixa",
+                duracao_estimada=1,
+            ),
+        ]
+        self.tarefas_com_indice = ordenar_tarefas(
+            self.tarefas,
+            "Padrão",
+        )
+
+    def test_filtra_tarefas_terminadas(self):
+        resultado = filtrar_tarefas(
+            self.tarefas_com_indice,
+            "Tarefas terminadas",
+            hoje=date(2026, 6, 10),
+        )
+
+        self.assertEqual(
+            [(indice, tarefa.titulo) for indice, tarefa in resultado],
+            [(0, "Terminada")],
+        )
+
+    def test_filtra_tarefas_atrasadas_nao_concluidas(self):
+        resultado = filtrar_tarefas(
+            self.tarefas_com_indice,
+            "Tarefas atrasadas",
+            hoje=date(2026, 6, 10),
+        )
+
+        self.assertEqual(
+            [(indice, tarefa.titulo) for indice, tarefa in resultado],
+            [(1, "Atrasada")],
+        )
+
+    def test_remove_somente_tarefas_terminadas(self):
+        resultado = remover_tarefas_terminadas(self.tarefas)
+
+        self.assertEqual(
+            [tarefa.titulo for tarefa in resultado],
+            ["Atrasada", "No prazo"],
+        )
+        self.assertEqual(len(self.tarefas), 3)
 
 
 class TestConclusaoTarefa(unittest.TestCase):

@@ -37,6 +37,7 @@ https://github.com/AliceMartiz/planejador_autonomo
 - [Como executar](#como-executar)
 - [Como usar o sistema](#como-usar-o-sistema)
 - [Como o algoritmo funciona](#como-o-algoritmo-funciona)
+- [Roteiro de apresentação](#roteiro-de-apresentação)
 - [Regras lógicas implementadas](#regras-lógicas-implementadas)
 - [Exemplo de entrada e saída](#exemplo-de-entrada-e-saída)
 - [Testes](#testes)
@@ -132,11 +133,13 @@ A aplicação possui as seguintes funcionalidades:
 - cálculo de pontuação lógica;
 - justificativa da decisão do planejador;
 - listagem de tarefas cadastradas;
+- filtros para tarefas terminadas e atrasadas;
 - ordenação das tarefas por prazo, pontuação, prioridade ou duração;
 - exclusão de tarefas;
+- limpeza em lote das tarefas terminadas, com confirmação;
 - marcação de subtarefas como concluídas;
-- edição e reposicionamento manual de subtarefas;
-- inserção de novas etapas em uma posição específica;
+- edição e reordenação de subtarefas por arrastar e soltar;
+- inserção de novas etapas abaixo de qualquer subtarefa;
 - exclusão de subtarefas com confirmação;
 - marcação de tarefa como concluída quando todas as subtarefas forem finalizadas;
 - armazenamento local em JSON;
@@ -162,8 +165,9 @@ contraste adequado e uma identidade coerente com o contexto acadêmico.
 O planejador continua gerando automaticamente uma sequência inicial de
 etapas, mas o usuário pode refinar esse plano conforme a necessidade.
 
-Na janela do planejamento é possível editar uma subtarefa, alterar sua
-posição, excluí-la ou adicionar uma nova etapa logo abaixo de qualquer item.
+Na janela do planejamento é possível editar ou excluir uma subtarefa e
+adicionar uma nova etapa logo abaixo de qualquer item. A alça localizada à
+direita de cada linha permite reorganizar as etapas por arrastar e soltar.
 A lista é renumerada automaticamente e as personalizações são salvas junto
 com a tarefa no arquivo JSON.
 
@@ -175,8 +179,8 @@ real da atividade.
 
 ## Tecnologias utilizadas
 
-- **Python 3**: linguagem principal do projeto;
-- **Streamlit**: criação da interface visual;
+- **Python 3.10 ou superior**: linguagem principal do projeto;
+- **Streamlit 1.58 (compatível abaixo da versão 2)**: criação da interface visual;
 - **JSON**: armazenamento local das tarefas;
 - **unittest**: testes automatizados;
 - **Git e GitHub**: versionamento do código;
@@ -192,11 +196,13 @@ planejador_autonomo/
 ├── .streamlit/
 │   └── config.toml          # Tema visual usado pelo Streamlit
 ├── app.py                  # Interface visual com Streamlit
+├── componentes_subtarefas.py # Componente de arrastar e soltar
 ├── main.py                 # Interface de terminal
 ├── models.py               # Modelos de dados do sistema
 ├── planner.py              # Regras lógicas e geração do plano
 ├── storage.py              # Salvamento e carregamento em JSON
 ├── ui_subtarefas.py        # Operações de edição das subtarefas
+├── ui_tarefas.py           # Filtros e ordenação das tarefas
 ├── validators.py           # Validação e normalização de dados
 ├── sample_data.json        # Exemplos de tarefas
 ├── tarefas.json            # Tarefas salvas pelo usuário
@@ -205,7 +211,8 @@ planejador_autonomo/
 └── tests/
     ├── test_interfaces.py  # Testes das interfaces e interações
     ├── test_planner.py     # Testes da lógica de planejamento
-    └── test_storage.py     # Testes do armazenamento em JSON
+    ├── test_storage.py     # Testes do armazenamento em JSON
+    └── test_ui_subtarefas.py # Testes da edição de subtarefas
 ```
 
 ---
@@ -330,6 +337,24 @@ Essa separação mostra a ideia de **decomposição de problemas em funções me
 
 ---
 
+## Roteiro de apresentação
+
+Uma demonstração curta pode seguir esta ordem:
+
+1. cadastrar uma tarefa e explicar os dados de entrada;
+2. mostrar urgência, pontuação e justificativa;
+3. abrir o plano e marcar uma subtarefa como concluída;
+4. editar, adicionar e reordenar uma subtarefa;
+5. apresentar os filtros e a ordenação das tarefas;
+6. mostrar o arquivo `tarefas.json` e explicar a persistência;
+7. executar os testes com `python -m unittest discover -s tests`.
+
+Na explicação do código, a sequência recomendada é:
+`models.py` → `validators.py` → `planner.py` → `storage.py` →
+`ui_tarefas.py` / `ui_subtarefas.py` → `app.py`.
+
+---
+
 ## Regras lógicas implementadas
 
 O planejador utiliza regras simples para simular tomada de decisão.
@@ -451,7 +476,9 @@ Os testes cobrem:
 - geração de plano completo;
 - exclusão de tarefas;
 - salvamento e carregamento em JSON;
-- ordenação de tarefas na interface visual;
+- tratamento de JSON inválido;
+- filtros e ordenação de tarefas;
+- edição, exclusão e reordenação de subtarefas;
 - reconhecimento de conclusão de subtarefas.
 
 ---
@@ -525,7 +552,6 @@ O projeto segue a proposta de decompor uma tarefa complexa em subtarefas menores
 </p>
 
 </details>
-```
 
 ---
 
@@ -536,6 +562,8 @@ O projeto possui algumas limitações importantes:
 - não utiliza modelo generativo de linguagem;
 - não aprende automaticamente com dados anteriores;
 - não possui banco de dados online;
+- no Streamlit Community Cloud, alterações no JSON podem ser perdidas quando a
+  aplicação reinicia ou recebe uma nova publicação;
 - não integra calendário real;
 - não considera disponibilidade diária detalhada do usuário;
 - usa regras fixas definidas previamente;
@@ -552,14 +580,13 @@ Possíveis melhorias para versões futuras:
 - adicionar campo de tempo disponível por dia;
 - detectar conflitos entre duração estimada e tempo disponível;
 - permitir edição de tarefas já cadastradas;
-- permitir criação manual de subtarefas personalizadas;
 - gerar gráficos de progresso;
 - integrar com calendário;
 - usar SQLite ou outro banco de dados local;
 - permitir múltiplos usuários;
 - adicionar uma camada de IA generativa apenas para sugerir subtarefas com linguagem natural;
 - exportar o plano em PDF;
-- melhorar o design visual da aplicação.
+- exportar um resumo para apresentação ou relatório.
 
 ---
 

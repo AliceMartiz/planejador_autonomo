@@ -6,70 +6,176 @@ menores e organizada por uma sequência lógica.
 """
 
 from datetime import date
-from typing import Dict, List, Optional, Tuple
 
 from models import Plano, Subtarefa, Tarefa
 from validators import converter_data, normalizar_prioridade, normalizar_texto
 
 
-SubtarefaModelo = Tuple[str, str, str]
+SubtarefaModelo = tuple[str, str, str]
 
 
-SUBTAREFAS_PRE_DEFINIDAS: Dict[str, List[SubtarefaModelo]] = {
+SUBTAREFAS_PRE_DEFINIDAS: dict[str, list[SubtarefaModelo]] = {
     "trabalho academico": [
-        ("Entender o tema proposto.", "planejamento", "Antes de pesquisar, é preciso compreender o que foi pedido."),
-        ("Definir problema de pesquisa.", "planejamento", "O problema orienta o restante do trabalho."),
-        ("Buscar referências bibliográficas.", "pesquisa", "As referências sustentam a fundamentação teórica."),
-        ("Organizar estrutura do trabalho.", "planejamento", "Uma estrutura evita escrita desordenada."),
-        ("Escrever introdução.", "execução", "A introdução apresenta tema, objetivo e contexto."),
-        ("Escrever fundamentação teórica.", "execução", "A teoria explica os conceitos usados no trabalho."),
-        ("Descrever metodologia.", "execução", "A metodologia mostra como o trabalho foi desenvolvido."),
-        ("Desenvolver ou explicar protótipo.", "execução", "O protótipo demonstra a aplicação prática da ideia."),
-        ("Analisar resultados.", "revisão", "A análise interpreta o que foi produzido."),
-        ("Revisar e entregar.", "revisão", "A revisão reduz erros antes da entrega final."),
+        (
+            "Entender o tema proposto.",
+            "planejamento",
+            "Antes de pesquisar, é preciso compreender o que foi pedido.",
+        ),
+        (
+            "Definir problema de pesquisa.",
+            "planejamento",
+            "O problema orienta o restante do trabalho.",
+        ),
+        (
+            "Buscar referências bibliográficas.",
+            "pesquisa",
+            "As referências sustentam a fundamentação teórica.",
+        ),
+        (
+            "Organizar estrutura do trabalho.",
+            "planejamento",
+            "Uma estrutura evita escrita desordenada.",
+        ),
+        (
+            "Escrever introdução.",
+            "execução",
+            "A introdução apresenta tema, objetivo e contexto.",
+        ),
+        (
+            "Escrever fundamentação teórica.",
+            "execução",
+            "A teoria explica os conceitos usados no trabalho.",
+        ),
+        (
+            "Descrever metodologia.",
+            "execução",
+            "A metodologia mostra como o trabalho foi desenvolvido.",
+        ),
+        (
+            "Desenvolver ou explicar protótipo.",
+            "execução",
+            "O protótipo demonstra a aplicação prática da ideia.",
+        ),
+        (
+            "Analisar resultados.",
+            "revisão",
+            "A análise interpreta o que foi produzido.",
+        ),
+        (
+            "Revisar e entregar.",
+            "revisão",
+            "A revisão reduz erros antes da entrega final.",
+        ),
     ],
     "estudar para prova": [
-        ("Listar conteúdos cobrados.", "planejamento", "Primeiro é preciso saber o que será estudado."),
-        ("Separar materiais.", "planejamento", "Materiais organizados reduzem perda de tempo."),
+        (
+            "Listar conteúdos cobrados.",
+            "planejamento",
+            "Primeiro é preciso saber o que será estudado.",
+        ),
+        (
+            "Separar materiais.",
+            "planejamento",
+            "Materiais organizados reduzem perda de tempo.",
+        ),
         ("Ler teoria principal.", "execução", "A teoria cria a base de compreensão."),
         ("Fazer resumo.", "execução", "O resumo ajuda a fixar os pontos essenciais."),
         ("Resolver exercícios.", "execução", "Exercícios testam a aplicação do conteúdo."),
         ("Revisar erros.", "revisão", "Corrigir erros evita repeti-los na prova."),
-        ("Fazer revisão final.", "revisão", "A revisão final consolida o estudo antes do prazo."),
+        (
+            "Fazer revisão final.",
+            "revisão",
+            "A revisão final consolida o estudo antes do prazo.",
+        ),
     ],
     "apresentacao": [
-        ("Definir objetivo da apresentação.", "planejamento", "O objetivo define o foco da fala."),
+        (
+            "Definir objetivo da apresentação.",
+            "planejamento",
+            "O objetivo define o foco da fala.",
+        ),
         ("Organizar tópicos principais.", "planejamento", "Os tópicos criam uma ordem clara."),
         ("Criar slides.", "execução", "Os slides dão apoio visual à apresentação."),
-        ("Preparar roteiro de fala.", "execução", "O roteiro ajuda a explicar sem improviso excessivo."),
+        (
+            "Preparar roteiro de fala.",
+            "execução",
+            "O roteiro ajuda a explicar sem improviso excessivo.",
+        ),
         ("Ensaiar apresentação.", "revisão", "O ensaio revela problemas de tempo e clareza."),
         ("Revisar tempo e clareza.", "revisão", "A última revisão melhora a comunicação final."),
     ],
     "projeto de programacao": [
-        ("Entender o problema.", "planejamento", "Nenhum código deve começar antes de entender o problema."),
-        ("Definir funcionalidades.", "planejamento", "As funcionalidades delimitam o que será implementado."),
-        ("Planejar estrutura do projeto.", "planejamento", "A estrutura separa responsabilidades em arquivos e funções."),
-        ("Implementar lógica principal.", "execução", "A lógica principal resolve o núcleo do problema."),
-        ("Testar código.", "revisão", "Testes verificam se o programa se comporta como esperado."),
+        (
+            "Entender o problema.",
+            "planejamento",
+            "Nenhum código deve começar antes de entender o problema.",
+        ),
+        (
+            "Definir funcionalidades.",
+            "planejamento",
+            "As funcionalidades delimitam o que será implementado.",
+        ),
+        (
+            "Planejar estrutura do projeto.",
+            "planejamento",
+            "A estrutura separa responsabilidades em arquivos e funções.",
+        ),
+        (
+            "Implementar lógica principal.",
+            "execução",
+            "A lógica principal resolve o núcleo do problema.",
+        ),
+        (
+            "Testar código.",
+            "revisão",
+            "Testes verificam se o programa se comporta como esperado.",
+        ),
         ("Corrigir erros.", "revisão", "Correções melhoram a qualidade do resultado."),
-        ("Documentar funcionamento.", "revisão", "A documentação facilita apresentação e manutenção."),
+        (
+            "Documentar funcionamento.",
+            "revisão",
+            "A documentação facilita apresentação e manutenção.",
+        ),
     ],
     "rotina de estudos": [
-        ("Listar disciplinas e compromissos.", "planejamento", "A rotina precisa começar com uma visão geral das demandas."),
-        ("Definir horários disponíveis.", "planejamento", "O tempo disponível limita o plano possível."),
+        (
+            "Listar disciplinas e compromissos.",
+            "planejamento",
+            "A rotina precisa começar com uma visão geral das demandas.",
+        ),
+        (
+            "Definir horários disponíveis.",
+            "planejamento",
+            "O tempo disponível limita o plano possível.",
+        ),
         ("Separar blocos de estudo.", "planejamento", "Blocos menores tornam a rotina executável."),
-        ("Priorizar conteúdos mais urgentes.", "execução", "Urgência e prioridade indicam o que vem antes."),
+        (
+            "Priorizar conteúdos mais urgentes.",
+            "execução",
+            "Urgência e prioridade indicam o que vem antes.",
+        ),
         ("Executar sessões de estudo.", "execução", "A execução transforma o plano em ação."),
         ("Revisar rotina semanal.", "revisão", "A revisão mostra se o planejamento foi realista."),
     ],
     "personalizada": [
         ("Analisar a tarefa.", "planejamento", "Primeiro é necessário entender o objetivo geral."),
-        ("Dividir em partes menores.", "planejamento", "A decomposição transforma algo complexo em etapas simples."),
-        ("Definir ordem de execução.", "planejamento", "A ordem reduz dependências e evita retrabalho."),
+        (
+            "Dividir em partes menores.",
+            "planejamento",
+            "A decomposição transforma algo complexo em etapas simples.",
+        ),
+        (
+            "Definir ordem de execução.",
+            "planejamento",
+            "A ordem reduz dependências e evita retrabalho.",
+        ),
         ("Executar etapas principais.", "execução", "A execução realiza o núcleo da tarefa."),
         ("Revisar resultado final.", "revisão", "A revisão verifica se o objetivo foi cumprido."),
     ],
 }
+
+# As duas interfaces usam esta mesma lista para evitar opções divergentes.
+TIPOS_DISPONIVEIS = tuple(SUBTAREFAS_PRE_DEFINIDAS)
 
 
 PALAVRAS_CHAVE_TIPO = {
@@ -89,7 +195,7 @@ PESO_CATEGORIA = {
 }
 
 
-def calcular_dias_restantes(prazo: str, hoje: Optional[date] = None) -> int:
+def calcular_dias_restantes(prazo: str, hoje: date | None = None) -> int:
     """Calcula quantos dias faltam até o prazo informado."""
 
     data_prazo = converter_data(prazo)
@@ -162,7 +268,7 @@ def identificar_tipo(tarefa: Tarefa) -> str:
     return "personalizada"
 
 
-def gerar_subtarefas(tarefa: Tarefa) -> List[Subtarefa]:
+def gerar_subtarefas(tarefa: Tarefa) -> list[Subtarefa]:
     """Gera subtarefas menores a partir do tipo identificado."""
 
     tipo_identificado = identificar_tipo(tarefa)
@@ -186,15 +292,18 @@ def gerar_subtarefas(tarefa: Tarefa) -> List[Subtarefa]:
                 nome="Dividir a tarefa em blocos menores de tempo.",
                 categoria="planejamento",
                 ordem_logica=0,
-                motivo="Como a duração estimada é alta, blocos menores tornam a execução mais controlável.",
+                motivo=(
+                    "Como a duração estimada é alta, blocos menores "
+                    "tornam a execução mais controlável."
+                ),
             ),
         )
 
     return subtarefas
 
 
-def ordenar_subtarefas(subtarefas: List[Subtarefa]) -> List[Subtarefa]:
-    """Ordena subtarefas pela sequência lógica de planejamento, execução e revisão."""
+def ordenar_subtarefas(subtarefas: list[Subtarefa]) -> list[Subtarefa]:
+    """Ordena por planejamento, pesquisa, execução e revisão."""
 
     subtarefas_ordenadas = sorted(
         subtarefas,
@@ -221,15 +330,24 @@ def gerar_justificativa(
 
     partes = [
         f"O sistema identificou a tarefa como '{tipo_identificado}'.",
-        f"Faltam {dias_restantes} dia(s) para o prazo, por isso a urgência foi classificada como '{urgencia}'.",
-        f"A prioridade '{normalizar_prioridade(tarefa.prioridade)}' e o prazo geraram pontuação {pontuacao}.",
-        "As subtarefas foram ordenadas começando por planejamento, seguindo para execução e terminando em revisão.",
+        (
+            f"Faltam {dias_restantes} dia(s) para o prazo, por isso a "
+            f"urgência foi classificada como '{urgencia}'."
+        ),
+        (
+            f"A prioridade '{normalizar_prioridade(tarefa.prioridade)}' "
+            f"e o prazo geraram pontuação {pontuacao}."
+        ),
+        (
+            "As subtarefas foram ordenadas começando por planejamento, "
+            "seguindo para execução e terminando em revisão."
+        ),
     ]
 
     return " ".join(partes)
 
 
-def gerar_plano(tarefa: Tarefa, hoje: Optional[date] = None) -> Plano:
+def gerar_plano(tarefa: Tarefa, hoje: date | None = None) -> Plano:
     """Gera um plano completo para a tarefa informada."""
 
     dias_restantes = calcular_dias_restantes(tarefa.prazo, hoje)

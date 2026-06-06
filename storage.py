@@ -3,9 +3,15 @@
 import json
 from dataclasses import asdict, fields
 from pathlib import Path
-from typing import List
+from tempfile import NamedTemporaryFile
 
 from models import Tarefa
+from validators import (
+    normalizar_prioridade,
+    validar_data,
+    validar_numero_positivo,
+    validar_prioridade,
+)
 
 
 ARQUIVO_PADRAO = Path(__file__).with_name("tarefas.json")
@@ -17,8 +23,48 @@ def _campos_tarefa():
     return {campo.name for campo in fields(Tarefa)}
 
 
-def salvar_tarefas(tarefas: List[Tarefa], caminho=ARQUIVO_PADRAO) -> None:
-    """Salva uma lista de tarefas em arquivo JSON."""
+def _normalizar_tarefa_carregada(tarefa: Tarefa) -> Tarefa | None:
+    """Valida dados externos antes que eles cheguem às interfaces."""
+
+    if (
+        not isinstance(tarefa.titulo, str)
+        or not tarefa.titulo.strip()
+        or not isinstance(tarefa.tipo, str)
+        or not isinstance(tarefa.prazo, str)
+        or not isinstance(tarefa.prioridade, str)
+        or not validar_data(tarefa.prazo)
+        or not validar_prioridade(tarefa.prioridade)
+        or not validar_numero_positivo(tarefa.duracao_estimada)
+    ):
+        return None
+
+    tarefa.titulo = tarefa.titulo.strip()
+    tarefa.tipo = tarefa.tipo.strip()
+    tarefa.descricao = str(tarefa.descricao or "").strip()
+    tarefa.prioridade = normalizar_prioridade(tarefa.prioridade)
+    tarefa.duracao_estimada = float(tarefa.duracao_estimada)
+
+    if not isinstance(tarefa.subtarefas_concluidas, list):
+        tarefa.subtarefas_concluidas = []
+    else:
+        tarefa.subtarefas_concluidas = [
+            nome.strip()
+            for item in tarefa.subtarefas_concluidas
+            if (nome := str(item).strip())
+        ]
+    if not isinstance(tarefa.concluida, bool):
+        tarefa.concluida = False
+    if (
+        tarefa.subtarefas_personalizadas is not None
+        and not isinstance(tarefa.subtarefas_personalizadas, list)
+    ):
+        tarefa.subtarefas_personalizadas = None
+
+    return tarefa
+
+
+def salvar_tarefas(tarefas: list[Tarefa], caminho=ARQUIVO_PADRAO) -> None:
+    """Salva as tarefas sem deixar um JSON parcial em caso de falha."""
 
     caminho = Path(caminho)
     caminho.parent.mkdir(parents=True, exist_ok=True)
@@ -33,11 +79,27 @@ def salvar_tarefas(tarefas: List[Tarefa], caminho=ARQUIVO_PADRAO) -> None:
         for tarefa in tarefas
     ]
 
-    with caminho.open("w", encoding="utf-8") as arquivo:
-        json.dump(dados, arquivo, ensure_ascii=False, indent=4)
+    caminho_temporario = None
+    try:
+        # O arquivo definitivo só é trocado após a gravação ser concluída.
+        with NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            dir=caminho.parent,
+            prefix=f".{caminho.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as arquivo:
+            caminho_temporario = Path(arquivo.name)
+            json.dump(dados, arquivo, ensure_ascii=False, indent=4)
+
+        caminho_temporario.replace(caminho)
+    finally:
+        if caminho_temporario and caminho_temporario.exists():
+            caminho_temporario.unlink()
 
 
-def carregar_tarefas(caminho=ARQUIVO_PADRAO) -> List[Tarefa]:
+def carregar_tarefas(caminho=ARQUIVO_PADRAO) -> list[Tarefa]:
     """Carrega tarefas de um arquivo JSON, retornando lista vazia se ele não existir."""
 
     caminho = Path(caminho)
@@ -48,7 +110,7 @@ def carregar_tarefas(caminho=ARQUIVO_PADRAO) -> List[Tarefa]:
     try:
         with caminho.open("r", encoding="utf-8") as arquivo:
             dados = json.load(arquivo)
-    except (json.JSONDecodeError, OSError):
+    except (json.JSONDecodeError, OSError, UnicodeDecodeError):
         return []
 
     if isinstance(dados, dict):
@@ -71,8 +133,10 @@ def carregar_tarefas(caminho=ARQUIVO_PADRAO) -> List[Tarefa]:
         }
 
         try:
-            tarefas.append(Tarefa(**dados_tarefa))
-        except TypeError:
+            tarefa = _normalizar_tarefa_carregada(Tarefa(**dados_tarefa))
+        except (TypeError, ValueError):
             continue
+        if tarefa is not None:
+            tarefas.append(tarefa)
 
     return tarefas

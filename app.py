@@ -2,11 +2,26 @@
 
 import streamlit as st
 
+from componentes_subtarefas import capturar_nova_ordem
 from models import Tarefa
-from planner import gerar_plano
+from planner import TIPOS_DISPONIVEIS, gerar_plano
 from storage import carregar_tarefas, salvar_tarefas
+from ui_tarefas import (
+    filtrar_tarefas,
+    ordenar_tarefas,
+    remover_tarefas_terminadas,
+    todas_subtarefas_concluidas,
+)
+from ui_subtarefas import (
+    criar_subtarefa_editavel,
+    converter_subtarefas,
+    editar_subtarefa,
+    inserir_subtarefa_abaixo,
+    normalizar_subtarefas,
+    reordenar_subtarefas,
+    remover_subtarefa,
+)
 from validators import (
-    converter_data,
     converter_numero_positivo,
     normalizar_prioridade,
     validar_data,
@@ -14,22 +29,18 @@ from validators import (
     validar_prioridade,
 )
 
-
-TIPOS_DISPONIVEIS = [
-    "trabalho academico",
-    "estudar para prova",
-    "apresentacao",
-    "projeto de programacao",
-    "rotina de estudos",
-    "personalizada",
-]
-
 OPCOES_ORDENACAO = [
     "Padrão",
     "Prazo mais próximo",
     "Maior pontuação",
     "Prioridade mais alta",
     "Maior duração",
+]
+
+OPCOES_FILTRO_TAREFAS = [
+    "Todas as tarefas",
+    "Tarefas terminadas",
+    "Tarefas atrasadas",
 ]
 
 ABAS_PRINCIPAIS = [
@@ -156,23 +167,46 @@ def aplicar_estilos() -> None:
             background-color: rgba(47, 107, 95, 0.08);
         }
 
-        .st-key-cabecalho_secao_tarefas {
+        [class*="st-key-bloco_subtarefa_"] {
             position: relative;
-            padding-right: 3.25rem;
+            gap: 0;
+            margin-bottom: -0.45rem;
         }
 
-        .st-key-filtro_tarefas {
+        .st-key-cabecalho_secao_tarefas {
+            position: relative;
+            padding-right: 9rem;
+        }
+
+        .st-key-controles_tarefas {
             position: absolute;
             top: 0.15rem;
             right: 0;
             z-index: 4;
-            width: 2.75rem;
+            width: 8.75rem;
         }
 
-        .st-key-filtro_tarefas button {
+        .st-key-controles_tarefas
+        [data-testid="stHorizontalBlock"] {
+            gap: 0.25rem;
+        }
+
+        .st-key-controles_tarefas
+        [data-testid="stColumn"] {
+            width: 2.75rem !important;
+            min-width: 2.75rem !important;
+        }
+
+        .st-key-controles_tarefas button {
             width: 2.75rem;
             height: 2.75rem;
             padding: 0;
+        }
+
+        .st-key-limpar_tarefas_terminadas button:hover:not(:disabled) {
+            border-color: rgba(185, 28, 28, 0.38);
+            background-color: rgba(185, 28, 28, 0.06);
+            color: #b91c1c;
         }
 
         [class*="st-key-linha_tarefa_"],
@@ -236,8 +270,8 @@ def aplicar_estilos() -> None:
         }
 
         [class*="st-key-linha_subtarefa_"] {
-            padding: 0.55rem 0.65rem;
-            margin: 0.15rem 0;
+            padding: 0.48rem 0.65rem;
+            margin: 0;
             border-radius: 7px;
             transition: background-color 160ms ease, opacity 160ms ease;
         }
@@ -250,12 +284,101 @@ def aplicar_estilos() -> None:
             background-color: rgba(100, 116, 139, 0.07);
         }
 
-        [class*="st-key-linha_subtarefa_concluida_"] p,
-        [class*="st-key-linha_subtarefa_concluida_"] code,
-        [class*="st-key-linha_subtarefa_concluida_"] span {
+        [class*="st-key-linha_subtarefa_concluida_"]
+        [data-testid="stColumn"]:not(:nth-child(5)) p,
+        [class*="st-key-linha_subtarefa_concluida_"]
+        [data-testid="stColumn"]:not(:nth-child(5)) code,
+        [class*="st-key-linha_subtarefa_concluida_"]
+        [data-testid="stColumn"]:not(:nth-child(5)) span {
             text-decoration: line-through;
             text-decoration-thickness: 1px;
             opacity: 0.52;
+        }
+
+        [class*="st-key-area_inserir_subtarefa_"] button,
+        [class*="st-key-acao_editar_subtarefa_"] button,
+        [class*="st-key-acao_excluir_subtarefa_"] button {
+            width: 1.8rem;
+            height: 1.55rem;
+            min-height: 1.55rem;
+            padding: 0;
+            border: 1px solid var(--academico-borda);
+            border-radius: 999px;
+            background-color: #f7f9fa;
+            color: var(--academico-verde);
+            box-shadow: 0 1px 5px rgba(30, 47, 61, 0.08);
+        }
+
+        [class*="st-key-area_inserir_subtarefa_"] {
+            position: relative;
+            z-index: 5;
+            height: 0.8rem;
+            min-height: 0.8rem;
+            margin: -0.08rem 0 -0.18rem;
+            opacity: 0;
+            transition: opacity 180ms ease;
+        }
+
+        [class*="st-key-bloco_subtarefa_"]:hover
+        [class*="st-key-area_inserir_subtarefa_"],
+        [class*="st-key-area_inserir_subtarefa_"]:hover,
+        [class*="st-key-area_inserir_subtarefa_"]:focus-within {
+            opacity: 1;
+        }
+
+        [class*="st-key-area_inserir_subtarefa_"]
+        [data-testid="stHorizontalBlock"] {
+            display: grid;
+            position: absolute;
+            top: 0;
+            right: 0;
+            left: 0;
+            transform: translateY(-42%);
+            grid-template-columns:
+                minmax(0, 1fr)
+                1.8rem
+                1.8rem
+                1.8rem
+                minmax(0, 1fr);
+            gap: 0.22rem;
+            min-height: 1.55rem;
+            align-items: center;
+        }
+
+        [class*="st-key-area_inserir_subtarefa_"]
+        [data-testid="stColumn"] {
+            width: auto !important;
+            min-width: 0 !important;
+        }
+
+        [class*="st-key-editor_subtarefa_"],
+        [class*="st-key-confirmacao_subtarefa_"] {
+            padding: 0.8rem 0.9rem 0.9rem;
+            margin: 0.3rem 0 0.55rem;
+            border: 1px solid var(--academico-borda);
+            border-radius: 7px;
+            background-color: rgba(47, 107, 95, 0.035);
+        }
+
+        [class*="st-key-editor_subtarefa_"] [data-testid="stForm"] {
+            padding: 0;
+            border: 0;
+            background: transparent;
+        }
+
+        [class*="st-key-editor_subtarefa_"] h5 {
+            margin-bottom: 0.15rem;
+            font-size: 0.98rem;
+        }
+
+        [class*="st-key-editor_subtarefa_"] textarea {
+            min-height: 5.5rem;
+        }
+
+        @media (hover: none) {
+            [class*="st-key-area_inserir_subtarefa_"] {
+                opacity: 0.55;
+            }
         }
 
         .app-footer {
@@ -399,6 +522,12 @@ def aplicar_estilos() -> None:
                 line-height: 1.45;
             }
 
+            [class*="st-key-area_inserir_subtarefa_"] {
+                height: 0.95rem;
+                min-height: 0.95rem;
+                opacity: 0.55;
+            }
+
             [class*="st-key-excluir_tarefa_"] {
                 top: 0.75rem !important;
                 transform: none !important;
@@ -423,9 +552,28 @@ def iniciar_estado() -> None:
         st.session_state.tarefas = carregar_tarefas()
     if "indice_plano_recente" not in st.session_state:
         st.session_state.indice_plano_recente = None
+    if "indice_plano_aberto" not in st.session_state:
+        st.session_state.indice_plano_aberto = None
+    if "subtarefas_editaveis" not in st.session_state:
+        st.session_state.subtarefas_editaveis = {}
+    if "editor_subtarefa" not in st.session_state:
+        st.session_state.editor_subtarefa = None
 
 
-def validar_formulario(prazo, prioridade, duracao):
+def reiniciar_estado_dependente_tarefas() -> None:
+    """Descarta seleções que podem apontar para índices antigos."""
+
+    st.session_state.indice_plano_recente = None
+    st.session_state.indice_plano_aberto = None
+    st.session_state.subtarefas_editaveis = {}
+    st.session_state.editor_subtarefa = None
+
+
+def validar_formulario(
+    prazo: str,
+    prioridade: str,
+    duracao: float,
+) -> list[str]:
     """Valida os campos antes de gerar a tarefa."""
 
     erros = []
@@ -440,46 +588,82 @@ def validar_formulario(prazo, prioridade, duracao):
     return erros
 
 
-def ordenar_tarefas(tarefas, criterio):
-    """Ordena as tarefas sem perder seus índices originais."""
+def obter_subtarefas_editaveis(indice_tarefa: int, plano):
+    """Obtém a lista editável da tarefa e preserva seu estado."""
 
-    tarefas_com_indice = list(enumerate(tarefas))
+    chave = str(indice_tarefa)
+    tarefa = st.session_state.tarefas[indice_tarefa]
 
-    if criterio == "Prazo mais próximo":
-        return sorted(
-            tarefas_com_indice,
-            key=lambda item: converter_data(item[1].prazo),
-        )
+    if chave not in st.session_state.subtarefas_editaveis:
+        if tarefa.subtarefas_personalizadas is None:
+            subtarefas = converter_subtarefas(plano.subtarefas)
+        else:
+            subtarefas = normalizar_subtarefas(
+                tarefa.subtarefas_personalizadas
+            )
+        st.session_state.subtarefas_editaveis[chave] = subtarefas
 
-    if criterio == "Maior pontuação":
-        return sorted(
-            tarefas_com_indice,
-            key=lambda item: (
-                -gerar_plano(item[1]).pontuacao,
-                converter_data(item[1].prazo),
-            ),
-        )
+    return st.session_state.subtarefas_editaveis[chave]
 
-    if criterio == "Prioridade mais alta":
-        pesos = {"baixa": 1, "media": 2, "alta": 3}
-        return sorted(
-            tarefas_com_indice,
-            key=lambda item: (
-                -pesos[item[1].prioridade],
-                converter_data(item[1].prazo),
-            ),
-        )
 
-    if criterio == "Maior duração":
-        return sorted(
-            tarefas_com_indice,
-            key=lambda item: (
-                -item[1].duracao_estimada,
-                converter_data(item[1].prazo),
-            ),
-        )
+def persistir_subtarefas_editaveis(
+    indice_tarefa: int,
+    subtarefas,
+) -> None:
+    """Atualiza o estado e salva a personalização no JSON."""
 
-    return tarefas_com_indice
+    chave = str(indice_tarefa)
+    subtarefas_normalizadas = normalizar_subtarefas(subtarefas)
+    tarefa = st.session_state.tarefas[indice_tarefa]
+    tarefa.subtarefas_personalizadas = subtarefas_normalizadas
+    st.session_state.subtarefas_editaveis[chave] = subtarefas_normalizadas
+
+    nomes_atuais = {
+        subtarefa["nome"]
+        for subtarefa in subtarefas_normalizadas
+    }
+    tarefa.subtarefas_concluidas = [
+        nome
+        for nome in tarefa.subtarefas_concluidas
+        if nome in nomes_atuais
+    ]
+    tarefa.concluida = bool(nomes_atuais) and nomes_atuais.issubset(
+        set(tarefa.subtarefas_concluidas)
+    )
+    salvar_tarefas(st.session_state.tarefas)
+
+
+def abrir_editor_subtarefa(
+    acao: str,
+    indice_tarefa: int,
+    identificador: str = "",
+) -> None:
+    """Define qual formulário de subtarefa deve aparecer."""
+
+    st.session_state.editor_subtarefa = {
+        "acao": acao,
+        "indice_tarefa": indice_tarefa,
+        "identificador": identificador,
+    }
+
+
+def fechar_editor_subtarefa() -> None:
+    """Fecha o formulário ou confirmação em uso."""
+
+    st.session_state.editor_subtarefa = None
+
+
+def abrir_plano(indice_tarefa: int) -> None:
+    """Mantém o plano selecionado aberto durante as interações."""
+
+    st.session_state.indice_plano_aberto = indice_tarefa
+
+
+def fechar_plano() -> None:
+    """Limpa o plano selecionado quando a janela é fechada."""
+
+    st.session_state.indice_plano_aberto = None
+    fechar_editor_subtarefa()
 
 
 def alternar_subtarefa(indice_tarefa: int, nome_subtarefa: str) -> None:
@@ -494,18 +678,6 @@ def alternar_subtarefa(indice_tarefa: int, nome_subtarefa: str) -> None:
         tarefa.subtarefas_concluidas.append(nome_subtarefa)
 
     salvar_tarefas(st.session_state.tarefas)
-
-
-def todas_subtarefas_concluidas(tarefa: Tarefa) -> bool:
-    """Verifica se todas as subtarefas geradas já foram concluídas."""
-
-    nomes_subtarefas = {
-        subtarefa.nome
-        for subtarefa in gerar_plano(tarefa).subtarefas
-    }
-    return bool(nomes_subtarefas) and nomes_subtarefas.issubset(
-        set(tarefa.subtarefas_concluidas)
-    )
 
 
 def definir_tarefa_concluida(indice: int, concluida: bool) -> None:
@@ -524,6 +696,393 @@ def mostrar_detalhes_tarefa(tarefa: Tarefa) -> None:
     coluna3.markdown(
         f"**Duração estimada**  \n{tarefa.duracao_estimada:g} hora(s)"
     )
+
+
+def editor_subtarefa_ativo(
+    acao: str,
+    indice_tarefa: int,
+    identificador: str,
+) -> bool:
+    """Informa se o editor atual corresponde à subtarefa indicada."""
+
+    editor = st.session_state.editor_subtarefa
+    return bool(
+        editor
+        and editor["acao"] == acao
+        and editor["indice_tarefa"] == indice_tarefa
+        and editor["identificador"] == identificador
+    )
+
+
+def renderizar_formulario_subtarefa(
+    indice_tarefa: int,
+    subtarefas,
+    acao: str,
+    identificador: str,
+) -> None:
+    """Renderiza o formulário de criação ou edição de uma subtarefa."""
+
+    if acao == "editar":
+        subtarefa_atual = next(
+            subtarefa
+            for subtarefa in subtarefas
+            if subtarefa["id"] == identificador
+        )
+        titulo_formulario = "Editar subtarefa"
+        nome_inicial = str(subtarefa_atual["nome"])
+        categoria_inicial = str(subtarefa_atual["categoria"])
+        motivo_inicial = str(subtarefa_atual["motivo"])
+    else:
+        subtarefa_atual = None
+        titulo_formulario = "Adicionar subtarefa"
+        nome_inicial = ""
+        categoria_inicial = "execução"
+        motivo_inicial = ""
+
+    with st.container(
+        key=f"editor_subtarefa_{acao}_{indice_tarefa}_{identificador}"
+    ):
+        st.markdown(f"##### {titulo_formulario}")
+
+        with st.form(
+            f"formulario_subtarefa_{acao}_{indice_tarefa}_{identificador}",
+            border=False,
+        ):
+            coluna_nome, coluna_categoria = st.columns([1.8, 1])
+            nome = coluna_nome.text_input(
+                "Nome da subtarefa",
+                value=nome_inicial,
+                placeholder="Ex.: revisar os exemplos do trabalho",
+            )
+            categoria = coluna_categoria.text_input(
+                "Categoria",
+                value=categoria_inicial,
+                placeholder="Ex.: planejamento",
+            )
+            motivo = st.text_area(
+                "Justificativa",
+                value=motivo_inicial,
+                placeholder="Explique por que esta etapa faz parte do plano.",
+                height=96,
+            )
+
+            coluna_cancelar, coluna_salvar = st.columns(2)
+            cancelar = coluna_cancelar.form_submit_button(
+                "Cancelar",
+                use_container_width=True,
+            )
+            salvar = coluna_salvar.form_submit_button(
+                "Salvar subtarefa",
+                icon=":material/check:",
+                type="primary",
+                use_container_width=True,
+            )
+
+        if cancelar:
+            fechar_editor_subtarefa()
+            st.rerun(scope="fragment")
+
+        if not salvar:
+            return
+
+        if not nome.strip() or not categoria.strip():
+            st.error("Informe o nome e a categoria da subtarefa.")
+            return
+
+        nomes_outras_subtarefas = {
+            str(subtarefa["nome"]).strip().casefold()
+            for subtarefa in subtarefas
+            if subtarefa["id"] != identificador
+        }
+        if nome.strip().casefold() in nomes_outras_subtarefas:
+            st.error("Já existe uma subtarefa com esse nome.")
+            return
+
+        tarefa = st.session_state.tarefas[indice_tarefa]
+
+        if acao == "editar":
+            nome_anterior = str(subtarefa_atual["nome"])
+            atualizadas = editar_subtarefa(
+                subtarefas,
+                identificador,
+                nome,
+                categoria,
+                motivo,
+            )
+            if nome_anterior in tarefa.subtarefas_concluidas:
+                tarefa.subtarefas_concluidas.remove(nome_anterior)
+                tarefa.subtarefas_concluidas.append(nome.strip())
+        else:
+            nova_subtarefa = criar_subtarefa_editavel(
+                nome=nome,
+                categoria=categoria,
+                motivo=motivo,
+            )
+            atualizadas = inserir_subtarefa_abaixo(
+                subtarefas,
+                identificador,
+                nova_subtarefa,
+            )
+            tarefa.concluida = False
+
+        persistir_subtarefas_editaveis(indice_tarefa, atualizadas)
+        fechar_editor_subtarefa()
+        st.rerun(scope="fragment")
+
+
+def renderizar_confirmacao_exclusao_subtarefa(
+    indice_tarefa: int,
+    subtarefas,
+    identificador: str,
+) -> None:
+    """Pede confirmação antes de remover uma subtarefa."""
+
+    subtarefa = next(
+        item
+        for item in subtarefas
+        if item["id"] == identificador
+    )
+
+    with st.container(
+        key=f"confirmacao_subtarefa_{indice_tarefa}_{identificador}"
+    ):
+        st.write(f'Excluir a subtarefa "{subtarefa["nome"]}"?')
+        coluna_cancelar, coluna_excluir = st.columns(2)
+
+        if coluna_cancelar.button(
+            "Cancelar",
+            key=(
+                f"cancelar_exclusao_subtarefa_"
+                f"{indice_tarefa}_{identificador}"
+            ),
+            use_container_width=True,
+        ):
+            fechar_editor_subtarefa()
+            st.rerun(scope="fragment")
+
+        if coluna_excluir.button(
+            "Excluir",
+            key=(
+                f"confirmar_exclusao_subtarefa_"
+                f"{indice_tarefa}_{identificador}"
+            ),
+            icon=":material/delete:",
+            type="primary",
+            use_container_width=True,
+        ):
+            tarefa = st.session_state.tarefas[indice_tarefa]
+            nome = str(subtarefa["nome"])
+            if nome in tarefa.subtarefas_concluidas:
+                tarefa.subtarefas_concluidas.remove(nome)
+
+            atualizadas = remover_subtarefa(
+                subtarefas,
+                identificador,
+            )
+            persistir_subtarefas_editaveis(
+                indice_tarefa,
+                atualizadas,
+            )
+            fechar_editor_subtarefa()
+            st.rerun(scope="fragment")
+
+
+def renderizar_subtarefas_editaveis(plano, indice_tarefa: int) -> None:
+    """Exibe a lista interativa de subtarefas do planejamento."""
+
+    subtarefas = obter_subtarefas_editaveis(indice_tarefa, plano)
+    tarefa = plano.tarefa
+    concluidas = set(tarefa.subtarefas_concluidas)
+
+    if subtarefas:
+        with st.container(key="cabecalho_subtarefas"):
+            cabecalho = st.columns([0.55, 1.9, 1.05, 2.6])
+            for coluna, titulo in zip(
+                cabecalho,
+                ["Ordem", "Subtarefa", "Categoria", "Motivo"],
+            ):
+                coluna.caption(titulo)
+    else:
+        st.info("O plano está sem subtarefas. Adicione uma nova etapa.")
+
+    for subtarefa in subtarefas:
+        identificador = str(subtarefa["id"])
+        nome = str(subtarefa["nome"])
+        concluida = nome in concluidas
+        estado = "concluida" if concluida else "pendente"
+
+        with st.container(
+            key=f"bloco_subtarefa_{indice_tarefa}_{identificador}"
+        ):
+            with st.container(
+                key=(
+                    f"linha_subtarefa_{estado}_{indice_tarefa}_"
+                    f"{identificador}"
+                )
+            ):
+                colunas = st.columns(
+                    [0.55, 1.9, 1.05, 2.6],
+                    vertical_alignment="center",
+                )
+                colunas[0].write(subtarefa["ordem_logica"])
+                colunas[1].write(nome)
+                colunas[2].write(subtarefa["categoria"])
+                colunas[3].write(subtarefa["motivo"])
+
+                st.button(
+                    f"Alternar {nome}",
+                    key=(
+                        f"alternar_subtarefa_{indice_tarefa}_"
+                        f"{identificador}_{estado}"
+                    ),
+                    on_click=alternar_subtarefa,
+                    args=(indice_tarefa, nome),
+                )
+                st.button(
+                    "",
+                    icon=":material/drag_indicator:",
+                    help=f"Arrastar {nome} para reordenar",
+                    key=(
+                        f"arrastar_subtarefa_{indice_tarefa}_"
+                        f"{identificador}"
+                    ),
+                )
+
+            if editor_subtarefa_ativo(
+                "editar",
+                indice_tarefa,
+                identificador,
+            ):
+                renderizar_formulario_subtarefa(
+                    indice_tarefa,
+                    subtarefas,
+                    "editar",
+                    identificador,
+                )
+
+            if editor_subtarefa_ativo(
+                "excluir",
+                indice_tarefa,
+                identificador,
+            ):
+                renderizar_confirmacao_exclusao_subtarefa(
+                    indice_tarefa,
+                    subtarefas,
+                    identificador,
+                )
+
+            with st.container(
+                key=(
+                    f"area_inserir_subtarefa_"
+                    f"{indice_tarefa}_{identificador}"
+                )
+            ):
+                (
+                    _,
+                    coluna_adicionar,
+                    coluna_editar,
+                    coluna_excluir,
+                    _,
+                ) = st.columns(
+                    [1, 0.1, 0.1, 0.1, 1],
+                    gap="small",
+                    vertical_alignment="center",
+                )
+                coluna_adicionar.button(
+                    "",
+                    icon=":material/add:",
+                    type="tertiary",
+                    help=f"Adicionar subtarefa abaixo de {nome}",
+                    key=(
+                        f"adicionar_subtarefa_abaixo_"
+                        f"{indice_tarefa}_{identificador}"
+                    ),
+                    on_click=abrir_editor_subtarefa,
+                    args=("adicionar", indice_tarefa, identificador),
+                )
+                coluna_editar.button(
+                    "",
+                    icon=":material/edit:",
+                    type="tertiary",
+                    help=f"Editar {nome}",
+                    key=(
+                        f"acao_editar_subtarefa_"
+                        f"{indice_tarefa}_{identificador}"
+                    ),
+                    on_click=abrir_editor_subtarefa,
+                    args=("editar", indice_tarefa, identificador),
+                )
+                coluna_excluir.button(
+                    "",
+                    icon=":material/delete:",
+                    type="tertiary",
+                    help=f"Excluir {nome}",
+                    key=(
+                        f"acao_excluir_subtarefa_"
+                        f"{indice_tarefa}_{identificador}"
+                    ),
+                    on_click=abrir_editor_subtarefa,
+                    args=("excluir", indice_tarefa, identificador),
+                )
+
+            if editor_subtarefa_ativo(
+                "adicionar",
+                indice_tarefa,
+                identificador,
+            ):
+                renderizar_formulario_subtarefa(
+                    indice_tarefa,
+                    subtarefas,
+                    "adicionar",
+                    identificador,
+                )
+
+    if len(subtarefas) > 1:
+        identificadores = [
+            str(subtarefa["id"])
+            for subtarefa in subtarefas
+        ]
+        nova_ordem = capturar_nova_ordem(
+            indice_tarefa,
+            identificadores,
+        )
+        if nova_ordem and nova_ordem != identificadores:
+            atualizadas = reordenar_subtarefas(
+                subtarefas,
+                nova_ordem,
+            )
+            ordem_atualizada = [
+                str(subtarefa["id"])
+                for subtarefa in atualizadas
+            ]
+            if ordem_atualizada != identificadores:
+                persistir_subtarefas_editaveis(
+                    indice_tarefa,
+                    atualizadas,
+                )
+                st.rerun(scope="fragment")
+
+    if not subtarefas:
+        identificador = ""
+        st.button(
+            "Adicionar primeira subtarefa",
+            icon=":material/add:",
+            key=f"adicionar_primeira_subtarefa_{indice_tarefa}",
+            on_click=abrir_editor_subtarefa,
+            args=("adicionar", indice_tarefa, identificador),
+        )
+
+        if editor_subtarefa_ativo(
+            "adicionar",
+            indice_tarefa,
+            identificador,
+        ):
+            renderizar_formulario_subtarefa(
+                indice_tarefa,
+                subtarefas,
+                "adicionar",
+                identificador,
+            )
 
 
 def mostrar_plano_visual(
@@ -555,52 +1114,14 @@ def mostrar_plano_visual(
         )
 
     st.markdown("#### Etapas recomendadas")
-
-    with st.container(key="cabecalho_subtarefas"):
-        cabecalho = st.columns([0.6, 2.2, 1.15, 3])
-        for coluna, titulo in zip(
-            cabecalho,
-            ["Ordem", "Subtarefa", "Categoria", "Motivo"],
-        ):
-            coluna.caption(titulo)
-
-    tarefa = plano.tarefa
-    concluidas = set(tarefa.subtarefas_concluidas)
-
-    for subtarefa in plano.subtarefas:
-        concluida = subtarefa.nome in concluidas
-        estado = "concluida" if concluida else "pendente"
-
-        with st.container(
-            key=(
-                f"linha_subtarefa_{estado}_{indice_tarefa}_"
-                f"{subtarefa.ordem_logica}"
-            )
-        ):
-            colunas = st.columns(
-                [0.6, 2.2, 1.15, 3],
-                vertical_alignment="center",
-            )
-            colunas[0].write(subtarefa.ordem_logica)
-            colunas[1].write(subtarefa.nome)
-            colunas[2].write(subtarefa.categoria)
-            colunas[3].write(subtarefa.motivo)
-
-            st.button(
-                f"Alternar {subtarefa.nome}",
-                key=(
-                    f"alternar_subtarefa_{indice_tarefa}_"
-                    f"{subtarefa.ordem_logica}_{estado}"
-                ),
-                on_click=alternar_subtarefa,
-                args=(indice_tarefa, subtarefa.nome),
-            )
+    renderizar_subtarefas_editaveis(plano, indice_tarefa)
 
 
 @st.dialog(
     "Resultado do planejamento",
     icon=":material/visibility:",
     width="medium",
+    on_dismiss=fechar_plano,
 )
 def mostrar_plano_em_janela(indice: int) -> None:
     """Mostra o planejamento da tarefa em uma janela separada."""
@@ -728,9 +1249,49 @@ def confirmar_exclusao(indice: int) -> None:
         use_container_width=True,
     ):
         st.session_state.tarefas.pop(indice)
-        st.session_state.indice_plano_recente = None
+        reiniciar_estado_dependente_tarefas()
         salvar_tarefas(st.session_state.tarefas)
         st.session_state.mensagem_sucesso = "Tarefa excluída com sucesso."
+        st.rerun()
+
+
+@st.dialog("Limpar tarefas terminadas?", icon=":material/delete_sweep:")
+def confirmar_limpeza_tarefas_terminadas() -> None:
+    """Pede confirmação antes de excluir todas as tarefas concluídas."""
+
+    quantidade = sum(
+        tarefa.concluida
+        for tarefa in st.session_state.tarefas
+    )
+    if not quantidade:
+        st.info("Não há tarefas terminadas para limpar.")
+        return
+
+    termo = "tarefa terminada" if quantidade == 1 else "tarefas terminadas"
+    st.write(
+        f"Deseja continuar e excluir {quantidade} {termo}? "
+        "Essa ação não pode ser desfeita."
+    )
+    coluna_cancelar, coluna_limpar = st.columns(2)
+
+    if coluna_cancelar.button("Cancelar", use_container_width=True):
+        st.rerun()
+
+    if coluna_limpar.button(
+        "Limpar tarefas",
+        icon=":material/delete_sweep:",
+        type="primary",
+        use_container_width=True,
+    ):
+        st.session_state.tarefas = remover_tarefas_terminadas(
+            st.session_state.tarefas
+        )
+        reiniciar_estado_dependente_tarefas()
+        salvar_tarefas(st.session_state.tarefas)
+        st.session_state.mensagem_sucesso = (
+            f"{quantidade} {termo} removida"
+            f"{'' if quantidade == 1 else 's'} com sucesso."
+        )
         st.rerun()
 
 
@@ -891,21 +1452,50 @@ def mostrar_resumo_plano_recente() -> None:
         coluna1.metric("Urgência", plano.urgencia)
         coluna2.metric("Pontuação", plano.pontuacao)
         coluna3.metric("Dias restantes", plano.dias_restantes)
-        coluna4.metric("Etapas", len(plano.subtarefas))
+        total_etapas = (
+            len(tarefa.subtarefas_personalizadas)
+            if tarefa.subtarefas_personalizadas is not None
+            else len(plano.subtarefas)
+        )
+        coluna4.metric("Etapas", total_etapas)
         mostrar_detalhes_tarefa(tarefa)
 
-        if st.button(
+        st.button(
             "Abrir planejamento completo",
             icon=":material/visibility:",
             type="secondary",
-        ):
-            mostrar_plano_em_janela(indice)
+            on_click=abrir_plano,
+            args=(indice,),
+        )
 
 
-def mostrar_tarefas_cadastradas(criterio_ordenacao: str) -> None:
+def mostrar_tarefas_cadastradas(
+    criterio_ordenacao: str,
+    criterio_filtro: str,
+) -> None:
     """Mostra as tarefas salvas e suas ações."""
 
     proporcoes = [1.2, 2, 1.1, 1, 0.8]
+    tarefas_visiveis = filtrar_tarefas(
+        ordenar_tarefas(
+            st.session_state.tarefas,
+            criterio_ordenacao,
+        ),
+        criterio_filtro,
+    )
+
+    if not tarefas_visiveis:
+        mensagens = {
+            "Tarefas terminadas": "Nenhuma tarefa terminada.",
+            "Tarefas atrasadas": "Nenhuma tarefa atrasada.",
+        }
+        st.info(
+            mensagens.get(
+                criterio_filtro,
+                "Nenhuma tarefa cadastrada ainda.",
+            )
+        )
+        return
 
     with st.container(key="lista_tarefas"):
         with st.container(key="cabecalho_tarefas"):
@@ -916,10 +1506,7 @@ def mostrar_tarefas_cadastradas(criterio_ordenacao: str) -> None:
             ):
                 coluna.caption(titulo)
 
-        for indice, tarefa in ordenar_tarefas(
-            st.session_state.tarefas,
-            criterio_ordenacao,
-        ):
+        for indice, tarefa in tarefas_visiveis:
             valores = [
                 tarefa.titulo,
                 tarefa.tipo,
@@ -946,11 +1533,12 @@ def mostrar_tarefas_cadastradas(criterio_ordenacao: str) -> None:
                 ):
                     confirmar_exclusao(indice)
 
-                if st.button(
+                st.button(
                     f"Abrir planejamento de {tarefa.titulo}",
                     key=f"abrir_linha_tarefa_{indice}",
-                ):
-                    mostrar_plano_em_janela(indice)
+                    on_click=abrir_plano,
+                    args=(indice,),
+                )
 
 
 def mostrar_aba_tarefas() -> None:
@@ -959,13 +1547,30 @@ def mostrar_aba_tarefas() -> None:
     with st.container(key="cabecalho_secao_tarefas"):
         st.subheader("Tarefas cadastradas")
         st.caption(
-            "Clique em uma linha para abrir o plano ou use o filtro para ordenar."
+            "Clique em uma linha para abrir o plano ou use os controles para filtrar e ordenar."
         )
 
-        with st.container(key="filtro_tarefas"):
-            with st.popover(
+        with st.container(key="controles_tarefas"):
+            (
+                coluna_filtro,
+                coluna_ordenacao,
+                coluna_limpeza,
+            ) = st.columns(3, gap="small")
+
+            with coluna_filtro.popover(
                 "",
-                icon=":material/filter_list:",
+                icon=":material/filter_alt:",
+                help="Filtrar tarefas",
+            ):
+                criterio_filtro = st.radio(
+                    "Mostrar",
+                    OPCOES_FILTRO_TAREFAS,
+                    key="criterio_filtro_tarefas",
+                )
+
+            with coluna_ordenacao.popover(
+                "",
+                icon=":material/sort:",
                 help="Ordenar tarefas",
             ):
                 criterio_ordenacao = st.radio(
@@ -974,8 +1579,28 @@ def mostrar_aba_tarefas() -> None:
                     key="criterio_ordenacao_tarefas",
                 )
 
+            quantidade_terminadas = sum(
+                tarefa.concluida
+                for tarefa in st.session_state.tarefas
+            )
+            if coluna_limpeza.button(
+                "",
+                icon=":material/delete_sweep:",
+                help=(
+                    "Limpar tarefas terminadas"
+                    if quantidade_terminadas
+                    else "Nenhuma tarefa terminada para limpar"
+                ),
+                key="limpar_tarefas_terminadas",
+                disabled=not quantidade_terminadas,
+            ):
+                confirmar_limpeza_tarefas_terminadas()
+
     if st.session_state.tarefas:
-        mostrar_tarefas_cadastradas(criterio_ordenacao)
+        mostrar_tarefas_cadastradas(
+            criterio_ordenacao,
+            criterio_filtro,
+        )
     else:
         st.info("Nenhuma tarefa cadastrada ainda.")
 
@@ -1078,6 +1703,13 @@ def main() -> None:
 
     with aba_sobre:
         mostrar_sobre_projeto()
+
+    indice_plano_aberto = st.session_state.indice_plano_aberto
+    if (
+        indice_plano_aberto is not None
+        and indice_plano_aberto < len(st.session_state.tarefas)
+    ):
+        mostrar_plano_em_janela(indice_plano_aberto)
 
     mostrar_rodape()
 

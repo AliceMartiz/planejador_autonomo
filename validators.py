@@ -1,6 +1,6 @@
 """Funções de validação para entradas do usuário."""
 
-from datetime import datetime
+from datetime import date, datetime
 import unicodedata
 
 
@@ -11,7 +11,11 @@ def remover_acentos(texto: str) -> str:
     """Remove acentos para facilitar comparações de texto."""
 
     texto_normalizado = unicodedata.normalize("NFD", texto)
-    return "".join(caractere for caractere in texto_normalizado if unicodedata.category(caractere) != "Mn")
+    return "".join(
+        caractere
+        for caractere in texto_normalizado
+        if unicodedata.category(caractere) != "Mn"
+    )
 
 
 def normalizar_texto(texto: str) -> str:
@@ -20,7 +24,7 @@ def normalizar_texto(texto: str) -> str:
     return remover_acentos(texto.strip().lower())
 
 
-def converter_data(data_texto: str):
+def converter_data(data_texto: str) -> date:
     """Converte uma data no formato dd/mm/aaaa para um objeto date."""
 
     return datetime.strptime(data_texto, "%d/%m/%Y").date()
@@ -32,7 +36,7 @@ def validar_data(data_texto: str) -> bool:
     try:
         converter_data(data_texto)
         return True
-    except ValueError:
+    except (TypeError, ValueError):
         return False
 
 

@@ -1,26 +1,5 @@
 [
     {
-        "titulo": "DAC",
-        "tipo": "trabalho academico",
-        "prazo": "22/07/2026",
-        "prioridade": "alta",
-        "duracao_estimada": 5.0,
-        "descricao": "Em grupo",
-        "subtarefas_concluidas": [
-            "Definir problema de pesquisa.",
-            "Organizar estrutura do trabalho.",
-            "Buscar referências bibliográficas.",
-            "Descrever metodologia.",
-            "Desenvolver ou explicar protótipo.",
-            "Analisar resultados.",
-            "Revisar e entregar.",
-            "Entender o tema proposto.",
-            "Escrever fundamentação teórica.",
-            "Escrever introdução."
-        ],
-        "concluida": true
-    },
-    {
         "titulo": "Logica Aplicada",
         "tipo": "trabalho academico",
         "prazo": "16/06/2026",
@@ -28,6 +7,7 @@
         "duracao_estimada": 0.5,
         "descricao": "dadada",
         "subtarefas_concluidas": [],
-        "concluida": false
+        "concluida": false,
+        "subtarefas_personalizadas": null
     }
 ]

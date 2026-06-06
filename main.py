@@ -3,7 +3,7 @@
 from pathlib import Path
 
 from models import Tarefa
-from planner import gerar_plano
+from planner import TIPOS_DISPONIVEIS, gerar_plano
 from storage import ARQUIVO_PADRAO, carregar_tarefas, salvar_tarefas
 from validators import (
     converter_numero_positivo,
@@ -12,17 +12,6 @@ from validators import (
     validar_numero_positivo,
     validar_prioridade,
 )
-
-
-TIPOS_DISPONIVEIS = [
-    "trabalho academico",
-    "estudar para prova",
-    "apresentacao",
-    "projeto de programacao",
-    "rotina de estudos",
-    "personalizada",
-]
-
 
 def mostrar_menu() -> None:
     """Mostra o menu principal."""
@@ -115,7 +104,7 @@ def cadastrar_tarefa() -> Tarefa:
     )
 
 
-def listar_tarefas(tarefas) -> None:
+def listar_tarefas(tarefas: list[Tarefa]) -> None:
     """Mostra as tarefas carregadas na memória."""
 
     if not tarefas:
@@ -130,7 +119,7 @@ def listar_tarefas(tarefas) -> None:
         )
 
 
-def escolher_tarefa(tarefas):
+def escolher_tarefa(tarefas: list[Tarefa]) -> Tarefa | None:
     """Escolhe uma tarefa da lista pelo índice."""
 
     if not tarefas:
@@ -148,7 +137,7 @@ def escolher_tarefa(tarefas):
         print("Opção inválida. Tente novamente.")
 
 
-def excluir_tarefa(tarefas) -> bool:
+def excluir_tarefa(tarefas: list[Tarefa]) -> bool:
     """Exclui uma tarefa após confirmação do usuário."""
 
     tarefa = escolher_tarefa(tarefas)
@@ -193,7 +182,7 @@ def mostrar_plano(tarefa: Tarefa) -> None:
     print(plano.justificativa)
 
 
-def carregar_exemplos():
+def carregar_exemplos() -> list[Tarefa]:
     """Carrega tarefas de exemplo do arquivo sample_data.json."""
 
     caminho_exemplos = Path(__file__).with_name("sample_data.json")
