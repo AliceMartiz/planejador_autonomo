@@ -301,6 +301,10 @@ Após o preenchimento, o sistema gera um plano contendo:
 - justificativa;
 - lista de subtarefas em ordem recomendada.
 
+Na versão de terminal, tarefas cadastradas e exemplos novos são salvos
+automaticamente. A opção de salvamento manual permanece disponível para
+confirmar a persistência quando necessário.
+
 ---
 
 ## Como o algoritmo funciona

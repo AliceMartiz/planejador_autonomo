@@ -6,6 +6,7 @@ from models import Tarefa
 from planner import TIPOS_DISPONIVEIS, gerar_plano
 from storage import ARQUIVO_PADRAO, carregar_tarefas, salvar_tarefas
 from validators import (
+    PRIORIDADES,
     converter_numero_positivo,
     formatar_prioridade,
     formatar_tipo_tarefa,
@@ -53,10 +54,14 @@ def ler_prioridade_valida() -> str:
     """Lê uma prioridade válida."""
 
     while True:
-        prioridade = input("Prioridade (baixa, media ou alta): ").strip()
+        prioridade = input("Prioridade (baixa, média ou alta): ").strip()
         if validar_prioridade(prioridade):
             return normalizar_prioridade(prioridade)
-        print("Prioridade inválida. Digite baixa, media ou alta.")
+        opcoes = ", ".join(
+            formatar_prioridade(valor).lower()
+            for valor in PRIORIDADES
+        )
+        print(f"Prioridade inválida. Digite {opcoes}.")
 
 
 def ler_numero_valido(mensagem: str) -> float:
@@ -115,11 +120,14 @@ def listar_tarefas(tarefas: list[Tarefa]) -> None:
 
     print("\nTarefas:")
     for indice, tarefa in enumerate(tarefas, start=1):
+        status = "Concluída" if tarefa.concluida else "Em andamento"
         print(
             f"{indice}. {tarefa.titulo} | "
             f"tipo: {formatar_tipo_tarefa(tarefa.tipo)} | "
             f"prazo: {tarefa.prazo} | "
-            f"prioridade: {formatar_prioridade(tarefa.prioridade)}"
+            f"prioridade: {formatar_prioridade(tarefa.prioridade)} | "
+            f"duração: {tarefa.duracao_estimada:g}h | "
+            f"status: {status}"
         )
 
 
@@ -131,9 +139,12 @@ def escolher_tarefa(tarefas: list[Tarefa]) -> Tarefa | None:
         return None
 
     listar_tarefas(tarefas)
+    print("0. Cancelar")
 
     while True:
-        escolha = input("Escolha o número da tarefa: ").strip()
+        escolha = input("Escolha o número da tarefa (0 para cancelar): ").strip()
+        if escolha == "0":
+            return None
         if escolha.isdigit():
             indice = int(escolha)
             if 1 <= indice <= len(tarefas):
@@ -199,41 +210,78 @@ def carregar_exemplos() -> list[Tarefa]:
     return carregar_tarefas(caminho_exemplos)
 
 
+def adicionar_tarefas_sem_duplicar(
+    tarefas: list[Tarefa],
+    novas_tarefas: list[Tarefa],
+) -> int:
+    """Adiciona somente tarefas que ainda não existem na lista."""
+
+    chaves_existentes = {
+        (tarefa.titulo.casefold(), tarefa.tipo, tarefa.prazo)
+        for tarefa in tarefas
+    }
+    quantidade_adicionada = 0
+
+    for tarefa in novas_tarefas:
+        chave = (tarefa.titulo.casefold(), tarefa.tipo, tarefa.prazo)
+        if chave in chaves_existentes:
+            continue
+
+        tarefas.append(tarefa)
+        chaves_existentes.add(chave)
+        quantidade_adicionada += 1
+
+    return quantidade_adicionada
+
+
 def executar_menu() -> None:
     """Controla o laço principal da interface de terminal."""
 
     tarefas = carregar_tarefas()
 
-    while True:
-        mostrar_menu()
-        opcao = input("Escolha uma opção: ").strip()
+    try:
+        while True:
+            mostrar_menu()
+            opcao = input("Escolha uma opção: ").strip()
 
-        if opcao == "1":
-            tarefas.append(cadastrar_tarefa())
-            print("Tarefa cadastrada com sucesso.")
-        elif opcao == "2":
-            listar_tarefas(tarefas)
-        elif opcao == "3":
-            tarefa = escolher_tarefa(tarefas)
-            if tarefa:
-                mostrar_plano(tarefa)
-        elif opcao == "4":
-            salvar_tarefas(tarefas)
-            print(f"Tarefas salvas em {ARQUIVO_PADRAO}.")
-        elif opcao == "5":
-            tarefas = carregar_tarefas()
-            print(f"{len(tarefas)} tarefa(s) carregada(s).")
-        elif opcao == "6":
-            exemplos = carregar_exemplos()
-            tarefas.extend(exemplos)
-            print(f"{len(exemplos)} exemplo(s) carregado(s).")
-        elif opcao == "7":
-            excluir_tarefa(tarefas)
-        elif opcao == "0":
-            print("Encerrando o planejador.")
-            break
-        else:
-            print("Opção inválida. Tente novamente.")
+            if opcao == "1":
+                tarefas.append(cadastrar_tarefa())
+                salvar_tarefas(tarefas)
+                print("Tarefa cadastrada e salva com sucesso.")
+            elif opcao == "2":
+                listar_tarefas(tarefas)
+            elif opcao == "3":
+                tarefa = escolher_tarefa(tarefas)
+                if tarefa:
+                    mostrar_plano(tarefa)
+            elif opcao == "4":
+                salvar_tarefas(tarefas)
+                print(f"Tarefas salvas em {ARQUIVO_PADRAO}.")
+            elif opcao == "5":
+                tarefas = carregar_tarefas()
+                print(f"{len(tarefas)} tarefa(s) carregada(s).")
+            elif opcao == "6":
+                exemplos = carregar_exemplos()
+                quantidade = adicionar_tarefas_sem_duplicar(
+                    tarefas,
+                    exemplos,
+                )
+                if quantidade:
+                    salvar_tarefas(tarefas)
+                    print(
+                        f"{quantidade} exemplo(s) novo(s) carregado(s) e salvo(s)."
+                    )
+                else:
+                    print("Os exemplos já estão carregados.")
+            elif opcao == "7":
+                excluir_tarefa(tarefas)
+            elif opcao == "0":
+                print("Encerrando o planejador.")
+                break
+            else:
+                print("Opção inválida. Tente novamente.")
+    except (EOFError, KeyboardInterrupt):
+        print("\nEncerrando o planejador.")
 
 
 if __name__ == "__main__":

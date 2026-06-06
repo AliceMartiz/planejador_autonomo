@@ -23,6 +23,7 @@ from ui_subtarefas import (
     remover_subtarefa,
 )
 from validators import (
+    PRIORIDADES,
     converter_data,
     converter_numero_positivo,
     formatar_prioridade,
@@ -758,7 +759,6 @@ def renderizar_editor_dados_tarefa(
 ) -> None:
     """Edita prioridade, prazo e duração dentro do planejamento."""
 
-    prioridades = ["baixa", "media", "alta"]
     with st.container(key="editor_dados_planejamento"):
         st.markdown("##### Editar dados do planejamento")
 
@@ -769,8 +769,8 @@ def renderizar_editor_dados_tarefa(
             coluna_prioridade, coluna_prazo, coluna_duracao = st.columns(3)
             prioridade = coluna_prioridade.selectbox(
                 "Prioridade",
-                prioridades,
-                index=prioridades.index(tarefa.prioridade),
+                PRIORIDADES,
+                index=PRIORIDADES.index(tarefa.prioridade),
                 format_func=formatar_prioridade,
             )
             prazo = coluna_prazo.date_input(
@@ -1553,8 +1553,8 @@ def mostrar_formulario() -> None:
         )
         prioridade = coluna_prioridade.selectbox(
             "Prioridade",
-            ["baixa", "media", "alta"],
-            index=1,
+            PRIORIDADES,
+            index=PRIORIDADES.index("media"),
             format_func=formatar_prioridade,
             help="A prioridade influencia a pontuação final.",
         )

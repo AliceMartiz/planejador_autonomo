@@ -16,10 +16,19 @@ from ui_tarefas import (
     remover_tarefas_terminadas,
     todas_subtarefas_concluidas,
 )
-from main import excluir_tarefa
+from main import (
+    adicionar_tarefas_sem_duplicar,
+    escolher_tarefa,
+    executar_menu,
+    excluir_tarefa,
+)
 from models import Tarefa
 from planner import gerar_plano
-from validators import formatar_prioridade, formatar_tipo_tarefa
+from validators import (
+    PRIORIDADES,
+    formatar_prioridade,
+    formatar_tipo_tarefa,
+)
 
 
 def criar_tarefa() -> Tarefa:
@@ -58,6 +67,42 @@ class TestExclusaoTerminal(unittest.TestCase):
         self.assertTrue(resultado)
         self.assertEqual(tarefas, [])
         salvar_mock.assert_called_once_with([])
+
+
+class TestNavegacaoTerminal(unittest.TestCase):
+    """Testa saídas e persistência do menu de terminal."""
+
+    @patch("builtins.input", return_value="0")
+    def test_permite_cancelar_escolha_de_tarefa(self, _):
+        self.assertIsNone(escolher_tarefa([criar_tarefa()]))
+
+    def test_nao_duplica_tarefas_de_exemplo(self):
+        tarefa = criar_tarefa()
+        tarefas = [tarefa]
+
+        quantidade = adicionar_tarefas_sem_duplicar(
+            tarefas,
+            [criar_tarefa()],
+        )
+
+        self.assertEqual(quantidade, 0)
+        self.assertEqual(len(tarefas), 1)
+
+    @patch("main.salvar_tarefas")
+    @patch("main.cadastrar_tarefa", return_value=criar_tarefa())
+    @patch("main.carregar_tarefas", return_value=[])
+    @patch("builtins.input", side_effect=["1", "0"])
+    def test_cadastro_salva_automaticamente(
+        self,
+        _,
+        __,
+        ___,
+        salvar_mock,
+    ):
+        executar_menu()
+
+        salvar_mock.assert_called_once()
+        self.assertEqual(salvar_mock.call_args.args[0][0].titulo, "Trabalho de teste")
 
 
 class TestOrdenacaoTarefas(unittest.TestCase):
@@ -223,6 +268,9 @@ class TestEdicaoTarefa(unittest.TestCase):
 
 class TestFormatacaoInterface(unittest.TestCase):
     """Testa os rótulos exibidos sem alterar os valores internos."""
+
+    def test_prioridades_mantem_ordem_da_interface(self):
+        self.assertEqual(PRIORIDADES, ("baixa", "media", "alta"))
 
     def test_formata_tipos_com_acentos(self):
         self.assertEqual(

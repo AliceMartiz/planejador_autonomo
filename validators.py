@@ -4,7 +4,8 @@ from datetime import date, datetime
 import unicodedata
 
 
-PRIORIDADES_VALIDAS = {"baixa", "media", "alta"}
+PRIORIDADES = ("baixa", "media", "alta")
+PRIORIDADES_VALIDAS = frozenset(PRIORIDADES)
 
 ROTULOS_TIPOS_TAREFA = {
     "trabalho academico": "Trabalho acadêmico",
