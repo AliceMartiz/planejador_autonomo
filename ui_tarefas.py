@@ -4,7 +4,51 @@ from datetime import date
 
 from models import Tarefa
 from planner import gerar_plano
-from validators import converter_data
+from validators import converter_data, normalizar_prioridade
+
+
+def _nomes_subtarefas(tarefa: Tarefa) -> set[str]:
+    """Retorna os nomes das etapas atuais, automáticas ou personalizadas."""
+
+    if tarefa.subtarefas_personalizadas is None:
+        return {
+            subtarefa.nome
+            for subtarefa in gerar_plano(tarefa).subtarefas
+        }
+
+    return {
+        str(subtarefa.get("nome", "")).strip()
+        for subtarefa in tarefa.subtarefas_personalizadas
+        if isinstance(subtarefa, dict)
+        and str(subtarefa.get("nome", "")).strip()
+    }
+
+
+def atualizar_dados_planejamento(
+    tarefa: Tarefa,
+    prioridade: str,
+    prazo: str,
+    duracao_estimada: float,
+) -> Tarefa:
+    """Atualiza os critérios e mantém somente o progresso ainda válido."""
+
+    estava_concluida = tarefa.concluida
+    tarefa.prioridade = normalizar_prioridade(prioridade)
+    tarefa.prazo = prazo
+    tarefa.duracao_estimada = float(duracao_estimada)
+
+    nomes_atuais = _nomes_subtarefas(tarefa)
+    tarefa.subtarefas_concluidas = [
+        nome
+        for nome in tarefa.subtarefas_concluidas
+        if nome in nomes_atuais
+    ]
+    if estava_concluida:
+        tarefa.concluida = bool(nomes_atuais) and nomes_atuais.issubset(
+            set(tarefa.subtarefas_concluidas)
+        )
+
+    return tarefa
 
 
 def ordenar_tarefas(
@@ -95,18 +139,7 @@ def remover_tarefas_terminadas(
 def todas_subtarefas_concluidas(tarefa: Tarefa) -> bool:
     """Verifica a conclusão usando as subtarefas atuais da tarefa."""
 
-    if tarefa.subtarefas_personalizadas is None:
-        nomes_subtarefas = {
-            subtarefa.nome
-            for subtarefa in gerar_plano(tarefa).subtarefas
-        }
-    else:
-        nomes_subtarefas = {
-            str(subtarefa.get("nome", "")).strip()
-            for subtarefa in tarefa.subtarefas_personalizadas
-            if isinstance(subtarefa, dict)
-            and str(subtarefa.get("nome", "")).strip()
-        }
+    nomes_subtarefas = _nomes_subtarefas(tarefa)
 
     return bool(nomes_subtarefas) and nomes_subtarefas.issubset(
         set(tarefa.subtarefas_concluidas)

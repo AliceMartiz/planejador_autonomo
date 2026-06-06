@@ -10,6 +10,7 @@ import unittest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from ui_tarefas import (
+    atualizar_dados_planejamento,
     filtrar_tarefas,
     ordenar_tarefas,
     remover_tarefas_terminadas,
@@ -178,6 +179,45 @@ class TestConclusaoTarefa(unittest.TestCase):
         tarefa = criar_tarefa()
 
         self.assertFalse(todas_subtarefas_concluidas(tarefa))
+
+
+class TestEdicaoTarefa(unittest.TestCase):
+    """Testa a atualização dos critérios usados pelo planejamento."""
+
+    def test_atualiza_prioridade_prazo_e_duracao(self):
+        tarefa = criar_tarefa()
+
+        atualizar_dados_planejamento(
+            tarefa,
+            "media",
+            "30/07/2026",
+            7.5,
+        )
+
+        self.assertEqual(tarefa.prioridade, "media")
+        self.assertEqual(tarefa.prazo, "30/07/2026")
+        self.assertEqual(tarefa.duracao_estimada, 7.5)
+
+    def test_nova_etapa_automatica_reabre_tarefa_concluida(self):
+        tarefa = criar_tarefa()
+        tarefa.subtarefas_concluidas = [
+            subtarefa.nome
+            for subtarefa in gerar_plano(tarefa).subtarefas
+        ]
+        tarefa.concluida = True
+
+        atualizar_dados_planejamento(
+            tarefa,
+            tarefa.prioridade,
+            tarefa.prazo,
+            7,
+        )
+
+        self.assertFalse(tarefa.concluida)
+        self.assertNotIn(
+            "Dividir a tarefa em blocos menores de tempo.",
+            tarefa.subtarefas_concluidas,
+        )
 
 
 if __name__ == "__main__":

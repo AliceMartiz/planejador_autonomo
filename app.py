@@ -7,6 +7,7 @@ from models import Tarefa
 from planner import TIPOS_DISPONIVEIS, gerar_plano
 from storage import carregar_tarefas, salvar_tarefas
 from ui_tarefas import (
+    atualizar_dados_planejamento,
     filtrar_tarefas,
     ordenar_tarefas,
     remover_tarefas_terminadas,
@@ -22,6 +23,7 @@ from ui_subtarefas import (
     remover_subtarefa,
 )
 from validators import (
+    converter_data,
     converter_numero_positivo,
     normalizar_prioridade,
     validar_data,
@@ -371,6 +373,47 @@ def aplicar_estilos() -> None:
             font-size: 0.98rem;
         }
 
+        .st-key-detalhes_planejamento {
+            position: relative;
+            margin: 0.15rem 0 0.65rem;
+            padding-top: 0.15rem;
+        }
+
+        .st-key-detalhes_planejamento > div:first-child p {
+            color: var(--academico-texto-suave);
+            font-size: 0.86rem;
+            font-weight: 650;
+        }
+
+        [class*="st-key-editar_dados_tarefa_"] {
+            position: absolute;
+            top: -0.2rem;
+            right: 0;
+            z-index: 3;
+        }
+
+        [class*="st-key-editar_dados_tarefa_"] button {
+            width: 2.35rem;
+            height: 2.35rem;
+            min-height: 2.35rem;
+            padding: 0;
+        }
+
+        .st-key-editor_dados_planejamento {
+            padding: 0.8rem 0.9rem 0.9rem;
+            margin: 0.2rem 0 0.7rem;
+            border: 1px solid var(--academico-borda);
+            border-radius: 7px;
+            background-color: rgba(47, 107, 95, 0.035);
+        }
+
+        .st-key-editor_dados_planejamento [data-testid="stForm"] {
+            padding: 0;
+            border: 0;
+            background: transparent;
+            box-shadow: none;
+        }
+
         [class*="st-key-editor_subtarefa_"] textarea {
             min-height: 5.5rem;
         }
@@ -558,6 +601,10 @@ def iniciar_estado() -> None:
         st.session_state.subtarefas_editaveis = {}
     if "editor_subtarefa" not in st.session_state:
         st.session_state.editor_subtarefa = None
+    if "indice_tarefa_em_edicao" not in st.session_state:
+        st.session_state.indice_tarefa_em_edicao = None
+    if "mensagem_plano" not in st.session_state:
+        st.session_state.mensagem_plano = None
 
 
 def reiniciar_estado_dependente_tarefas() -> None:
@@ -567,6 +614,8 @@ def reiniciar_estado_dependente_tarefas() -> None:
     st.session_state.indice_plano_aberto = None
     st.session_state.subtarefas_editaveis = {}
     st.session_state.editor_subtarefa = None
+    st.session_state.indice_tarefa_em_edicao = None
+    st.session_state.mensagem_plano = None
 
 
 def validar_formulario(
@@ -663,6 +712,8 @@ def fechar_plano() -> None:
     """Limpa o plano selecionado quando a janela é fechada."""
 
     st.session_state.indice_plano_aberto = None
+    st.session_state.indice_tarefa_em_edicao = None
+    st.session_state.mensagem_plano = None
     fechar_editor_subtarefa()
 
 
@@ -687,15 +738,136 @@ def definir_tarefa_concluida(indice: int, concluida: bool) -> None:
     salvar_tarefas(st.session_state.tarefas)
 
 
-def mostrar_detalhes_tarefa(tarefa: Tarefa) -> None:
-    """Mostra os principais dados informados pelo usuário."""
+def abrir_edicao_tarefa(indice_tarefa: int) -> None:
+    """Ativa a edição dos critérios da tarefa aberta."""
 
-    coluna1, coluna2, coluna3 = st.columns(3)
-    coluna1.markdown(f"**Prioridade**  \n{tarefa.prioridade.title()}")
-    coluna2.markdown(f"**Prazo**  \n{tarefa.prazo}")
-    coluna3.markdown(
-        f"**Duração estimada**  \n{tarefa.duracao_estimada:g} hora(s)"
-    )
+    st.session_state.indice_tarefa_em_edicao = indice_tarefa
+
+
+def cancelar_edicao_tarefa() -> None:
+    """Fecha a edição sem alterar a tarefa."""
+
+    st.session_state.indice_tarefa_em_edicao = None
+
+
+def renderizar_editor_dados_tarefa(
+    tarefa: Tarefa,
+    indice_tarefa: int,
+) -> None:
+    """Edita prioridade, prazo e duração dentro do planejamento."""
+
+    prioridades = ["baixa", "media", "alta"]
+    with st.container(key="editor_dados_planejamento"):
+        st.markdown("##### Editar dados do planejamento")
+
+        with st.form(
+            f"formulario_editar_tarefa_{indice_tarefa}",
+            border=False,
+        ):
+            coluna_prioridade, coluna_prazo, coluna_duracao = st.columns(3)
+            prioridade = coluna_prioridade.selectbox(
+                "Prioridade",
+                prioridades,
+                index=prioridades.index(tarefa.prioridade),
+                format_func=lambda valor: (
+                    "Média" if valor == "media" else valor.title()
+                ),
+            )
+            prazo = coluna_prazo.date_input(
+                "Prazo",
+                value=converter_data(tarefa.prazo),
+                format="DD/MM/YYYY",
+            )
+            duracao = coluna_duracao.number_input(
+                "Duração estimada",
+                min_value=0.5,
+                value=float(tarefa.duracao_estimada),
+                step=0.5,
+                help="Total aproximado de horas para concluir a tarefa.",
+            )
+
+            coluna_cancelar, coluna_salvar = st.columns(2)
+            cancelar = coluna_cancelar.form_submit_button(
+                "Cancelar",
+                use_container_width=True,
+            )
+            salvar = coluna_salvar.form_submit_button(
+                "Atualizar planejamento",
+                icon=":material/check:",
+                type="primary",
+                use_container_width=True,
+            )
+
+        if cancelar:
+            cancelar_edicao_tarefa()
+            st.rerun(scope="app")
+
+        if not salvar:
+            return
+
+        prazo_formatado = prazo.strftime("%d/%m/%Y")
+        erros = validar_formulario(
+            prazo_formatado,
+            prioridade,
+            duracao,
+        )
+        if erros:
+            for erro in erros:
+                st.error(erro)
+            return
+
+        atualizar_dados_planejamento(
+            tarefa,
+            prioridade,
+            prazo_formatado,
+            converter_numero_positivo(
+                duracao,
+                "Duração estimada",
+            ),
+        )
+        st.session_state.subtarefas_editaveis.pop(
+            str(indice_tarefa),
+            None,
+        )
+        salvar_tarefas(st.session_state.tarefas)
+        cancelar_edicao_tarefa()
+        st.session_state.mensagem_plano = (
+            "Dados atualizados e planejamento recalculado."
+        )
+        st.rerun(scope="app")
+
+
+def mostrar_detalhes_tarefa(
+    tarefa: Tarefa,
+    indice_tarefa: int | None,
+) -> None:
+    """Mostra ou edita os critérios informados pelo usuário."""
+
+    if (
+        indice_tarefa is not None
+        and st.session_state.indice_tarefa_em_edicao == indice_tarefa
+    ):
+        renderizar_editor_dados_tarefa(tarefa, indice_tarefa)
+        return
+
+    with st.container(key="detalhes_planejamento"):
+        st.caption("Dados do planejamento")
+        if indice_tarefa is not None:
+            st.button(
+                "",
+                icon=":material/edit:",
+                help="Editar prioridade, prazo e duração",
+                key=f"editar_dados_tarefa_{indice_tarefa}",
+                on_click=abrir_edicao_tarefa,
+                args=(indice_tarefa,),
+            )
+
+        coluna1, coluna2, coluna3 = st.columns(3)
+        coluna1.markdown(f"**Prioridade**  \n{tarefa.prioridade.title()}")
+        coluna2.markdown(f"**Prazo**  \n{tarefa.prazo}")
+        coluna3.markdown(
+            f"**Duração estimada**  \n{tarefa.duracao_estimada:g} hora(s)"
+        )
 
 
 def editor_subtarefa_ativo(
@@ -1100,7 +1272,7 @@ def mostrar_plano_visual(
     coluna2.metric("Pontuação", plano.pontuacao)
     coluna3.metric("Dias restantes", plano.dias_restantes)
 
-    mostrar_detalhes_tarefa(plano.tarefa)
+    mostrar_detalhes_tarefa(plano.tarefa, indice_tarefa)
 
     with st.expander("Como o planejador tomou essa decisão?"):
         st.write(plano.justificativa)
@@ -1130,6 +1302,8 @@ def mostrar_plano_em_janela(indice: int) -> None:
     st.subheader(tarefa.titulo)
     if tarefa.descricao:
         st.caption(tarefa.descricao)
+    if mensagem := st.session_state.pop("mensagem_plano", None):
+        st.success(mensagem)
 
     mostrar_plano_visual(
         gerar_plano(tarefa),

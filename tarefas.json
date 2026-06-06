@@ -2,12 +2,83 @@
     {
         "titulo": "Logica Aplicada",
         "tipo": "trabalho academico",
-        "prazo": "16/06/2026",
+        "prazo": "15/06/2026",
         "prioridade": "alta",
         "duracao_estimada": 0.5,
         "descricao": "dadada",
         "subtarefas_concluidas": [],
         "concluida": false,
-        "subtarefas_personalizadas": null
+        "subtarefas_personalizadas": [
+            {
+                "id": "112c5a0c033d4abea784cfb047ff294a",
+                "nome": "Definir problema de pesquisa.",
+                "categoria": "planejamento",
+                "motivo": "O problema orienta o restante do trabalho.",
+                "ordem_logica": 1
+            },
+            {
+                "id": "3b4d1741c25b466c96ba1cfb0641c2ec",
+                "nome": "Entender o tema proposto.",
+                "categoria": "planejamento",
+                "motivo": "Antes de pesquisar, é preciso compreender o que foi pedido.",
+                "ordem_logica": 2
+            },
+            {
+                "id": "45d6f4369430424e9a22271ffd0cd04d",
+                "nome": "Organizar estrutura do trabalho.",
+                "categoria": "planejamento",
+                "motivo": "Uma estrutura evita escrita desordenada.",
+                "ordem_logica": 3
+            },
+            {
+                "id": "0cf519589dcf42ac9d8efa1a72624fd2",
+                "nome": "Buscar referências bibliográficas.",
+                "categoria": "pesquisa",
+                "motivo": "As referências sustentam a fundamentação teórica.",
+                "ordem_logica": 4
+            },
+            {
+                "id": "c3d1abde961c472f8e6903dbd71aaff3",
+                "nome": "Escrever introdução.",
+                "categoria": "execução",
+                "motivo": "A introdução apresenta tema, objetivo e contexto.",
+                "ordem_logica": 5
+            },
+            {
+                "id": "a98622729d5c481c9f4568690d563946",
+                "nome": "Escrever fundamentação teórica.",
+                "categoria": "execução",
+                "motivo": "A teoria explica os conceitos usados no trabalho.",
+                "ordem_logica": 6
+            },
+            {
+                "id": "cc3ec7b20adb41e4b1cbb19edba05f4d",
+                "nome": "Descrever metodologia.",
+                "categoria": "execução",
+                "motivo": "A metodologia mostra como o trabalho foi desenvolvido.",
+                "ordem_logica": 7
+            },
+            {
+                "id": "c366cd5f2ec342c88aff74a3667904d8",
+                "nome": "Desenvolver ou explicar protótipo.",
+                "categoria": "execução",
+                "motivo": "O protótipo demonstra a aplicação prática da ideia.",
+                "ordem_logica": 8
+            },
+            {
+                "id": "0b32ac0bbd1e44139e2dba4ae3a20a1c",
+                "nome": "Analisar resultados.",
+                "categoria": "revisão",
+                "motivo": "A análise interpreta o que foi produzido.",
+                "ordem_logica": 9
+            },
+            {
+                "id": "9d9e7514d5194e6094bd94a679fe53df",
+                "nome": "Revisar e entregar.",
+                "categoria": "revisão",
+                "motivo": "A revisão reduz erros antes da entrega final.",
+                "ordem_logica": 10
+            }
+        ]
     }
 ]
