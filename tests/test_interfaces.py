@@ -19,6 +19,7 @@ from ui_tarefas import (
 from main import excluir_tarefa
 from models import Tarefa
 from planner import gerar_plano
+from validators import formatar_prioridade, formatar_tipo_tarefa
 
 
 def criar_tarefa() -> Tarefa:
@@ -218,6 +219,23 @@ class TestEdicaoTarefa(unittest.TestCase):
             "Dividir a tarefa em blocos menores de tempo.",
             tarefa.subtarefas_concluidas,
         )
+
+
+class TestFormatacaoInterface(unittest.TestCase):
+    """Testa os rótulos exibidos sem alterar os valores internos."""
+
+    def test_formata_tipos_com_acentos(self):
+        self.assertEqual(
+            formatar_tipo_tarefa("trabalho academico"),
+            "Trabalho acadêmico",
+        )
+        self.assertEqual(
+            formatar_tipo_tarefa("projeto de programacao"),
+            "Projeto de programação",
+        )
+
+    def test_formata_prioridade_media(self):
+        self.assertEqual(formatar_prioridade("media"), "Média")
 
 
 if __name__ == "__main__":

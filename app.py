@@ -25,6 +25,8 @@ from ui_subtarefas import (
 from validators import (
     converter_data,
     converter_numero_positivo,
+    formatar_prioridade,
+    formatar_tipo_tarefa,
     normalizar_prioridade,
     validar_data,
     validar_numero_positivo,
@@ -769,9 +771,7 @@ def renderizar_editor_dados_tarefa(
                 "Prioridade",
                 prioridades,
                 index=prioridades.index(tarefa.prioridade),
-                format_func=lambda valor: (
-                    "Média" if valor == "media" else valor.title()
-                ),
+                format_func=formatar_prioridade,
             )
             prazo = coluna_prazo.date_input(
                 "Prazo",
@@ -863,7 +863,9 @@ def mostrar_detalhes_tarefa(
             )
 
         coluna1, coluna2, coluna3 = st.columns(3)
-        coluna1.markdown(f"**Prioridade**  \n{tarefa.prioridade.title()}")
+        coluna1.markdown(
+            f"**Prioridade**  \n{formatar_prioridade(tarefa.prioridade)}"
+        )
         coluna2.markdown(f"**Prazo**  \n{tarefa.prazo}")
         coluna3.markdown(
             f"**Duração estimada**  \n{tarefa.duracao_estimada:g} hora(s)"
@@ -1098,7 +1100,7 @@ def renderizar_subtarefas_editaveis(plano, indice_tarefa: int) -> None:
                 )
                 colunas[0].write(subtarefa["ordem_logica"])
                 colunas[1].write(nome)
-                colunas[2].write(subtarefa["categoria"])
+                colunas[2].write(str(subtarefa["categoria"]).capitalize())
                 colunas[3].write(subtarefa["motivo"])
 
                 st.button(
@@ -1268,7 +1270,7 @@ def mostrar_plano_visual(
         st.subheader("Resultado do planejamento")
 
     coluna1, coluna2, coluna3 = st.columns(3)
-    coluna1.metric("Urgência", plano.urgencia)
+    coluna1.metric("Urgência", plano.urgencia.capitalize())
     coluna2.metric("Pontuação", plano.pontuacao)
     coluna3.metric("Dias restantes", plano.dias_restantes)
 
@@ -1546,12 +1548,14 @@ def mostrar_formulario() -> None:
         tipo = coluna_tipo.selectbox(
             "Tipo da tarefa",
             TIPOS_DISPONIVEIS,
+            format_func=formatar_tipo_tarefa,
             help="Escolha a categoria que mais se aproxima do objetivo.",
         )
         prioridade = coluna_prioridade.selectbox(
             "Prioridade",
             ["baixa", "media", "alta"],
             index=1,
+            format_func=formatar_prioridade,
             help="A prioridade influencia a pontuação final.",
         )
 
@@ -1621,9 +1625,12 @@ def mostrar_resumo_plano_recente() -> None:
     st.markdown("### Plano criado")
     with st.container(key="resumo_plano_recente"):
         st.markdown(f"#### {tarefa.titulo}")
-        st.caption(f"Tipo identificado: {plano.tipo_identificado}")
+        st.caption(
+            "Tipo identificado: "
+            f"{formatar_tipo_tarefa(plano.tipo_identificado)}"
+        )
         coluna1, coluna2, coluna3, coluna4 = st.columns(4)
-        coluna1.metric("Urgência", plano.urgencia)
+        coluna1.metric("Urgência", plano.urgencia.capitalize())
         coluna2.metric("Pontuação", plano.pontuacao)
         coluna3.metric("Dias restantes", plano.dias_restantes)
         total_etapas = (
@@ -1632,7 +1639,7 @@ def mostrar_resumo_plano_recente() -> None:
             else len(plano.subtarefas)
         )
         coluna4.metric("Etapas", total_etapas)
-        mostrar_detalhes_tarefa(tarefa)
+        mostrar_detalhes_tarefa(tarefa, None)
 
         st.button(
             "Abrir planejamento completo",
@@ -1683,9 +1690,9 @@ def mostrar_tarefas_cadastradas(
         for indice, tarefa in tarefas_visiveis:
             valores = [
                 tarefa.titulo,
-                tarefa.tipo,
+                formatar_tipo_tarefa(tarefa.tipo),
                 tarefa.prazo,
-                tarefa.prioridade,
+                formatar_prioridade(tarefa.prioridade),
                 f"{tarefa.duracao_estimada:g}",
             ]
             estado = "concluida" if tarefa.concluida else "pendente"

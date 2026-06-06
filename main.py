@@ -7,6 +7,8 @@ from planner import TIPOS_DISPONIVEIS, gerar_plano
 from storage import ARQUIVO_PADRAO, carregar_tarefas, salvar_tarefas
 from validators import (
     converter_numero_positivo,
+    formatar_prioridade,
+    formatar_tipo_tarefa,
     normalizar_prioridade,
     validar_data,
     validar_numero_positivo,
@@ -72,7 +74,7 @@ def escolher_tipo() -> str:
 
     print("\nTipos disponíveis:")
     for indice, tipo in enumerate(TIPOS_DISPONIVEIS, start=1):
-        print(f"{indice}. {tipo}")
+        print(f"{indice}. {formatar_tipo_tarefa(tipo)}")
 
     while True:
         escolha = input("Escolha o tipo pelo número: ").strip()
@@ -114,8 +116,10 @@ def listar_tarefas(tarefas: list[Tarefa]) -> None:
     print("\nTarefas:")
     for indice, tarefa in enumerate(tarefas, start=1):
         print(
-            f"{indice}. {tarefa.titulo} | tipo: {tarefa.tipo} | prazo: {tarefa.prazo} | "
-            f"prioridade: {tarefa.prioridade}"
+            f"{indice}. {tarefa.titulo} | "
+            f"tipo: {formatar_tipo_tarefa(tarefa.tipo)} | "
+            f"prazo: {tarefa.prazo} | "
+            f"prioridade: {formatar_prioridade(tarefa.prioridade)}"
         )
 
 
@@ -168,14 +172,20 @@ def mostrar_plano(tarefa: Tarefa) -> None:
 
     print("\n=== Plano gerado ===")
     print(f"Tarefa: {plano.tarefa.titulo}")
-    print(f"Tipo identificado: {plano.tipo_identificado}")
+    print(
+        "Tipo identificado: "
+        f"{formatar_tipo_tarefa(plano.tipo_identificado)}"
+    )
     print(f"Dias restantes: {plano.dias_restantes}")
-    print(f"Urgência: {plano.urgencia}")
+    print(f"Urgência: {plano.urgencia.capitalize()}")
     print(f"Pontuação: {plano.pontuacao}")
 
     print("\nOrdem recomendada:")
     for subtarefa in plano.subtarefas:
-        print(f"{subtarefa.ordem_logica}. {subtarefa.nome} ({subtarefa.categoria})")
+        print(
+            f"{subtarefa.ordem_logica}. {subtarefa.nome} "
+            f"({subtarefa.categoria.capitalize()})"
+        )
         print(f"   Motivo: {subtarefa.motivo}")
 
     print("\nJustificativa:")

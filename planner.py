@@ -8,7 +8,13 @@ menores e organizada por uma sequência lógica.
 from datetime import date
 
 from models import Plano, Subtarefa, Tarefa
-from validators import converter_data, normalizar_prioridade, normalizar_texto
+from validators import (
+    converter_data,
+    formatar_prioridade,
+    formatar_tipo_tarefa,
+    normalizar_prioridade,
+    normalizar_texto,
+)
 
 
 SubtarefaModelo = tuple[str, str, str]
@@ -329,13 +335,16 @@ def gerar_justificativa(
     """Gera uma explicação simples para a decisão do planejador."""
 
     partes = [
-        f"O sistema identificou a tarefa como '{tipo_identificado}'.",
         (
-            f"Faltam {dias_restantes} dia(s) para o prazo, por isso a "
-            f"urgência foi classificada como '{urgencia}'."
+            "O sistema identificou a tarefa como "
+            f"'{formatar_tipo_tarefa(tipo_identificado)}'."
         ),
         (
-            f"A prioridade '{normalizar_prioridade(tarefa.prioridade)}' "
+            f"Faltam {dias_restantes} dia(s) para o prazo, por isso a "
+            f"urgência foi classificada como '{urgencia.capitalize()}'."
+        ),
+        (
+            f"A prioridade '{formatar_prioridade(tarefa.prioridade)}' "
             f"e o prazo geraram pontuação {pontuacao}."
         ),
         (
