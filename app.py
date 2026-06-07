@@ -129,11 +129,17 @@ def aplicar_estilos() -> None:
             background-color: rgba(255, 255, 255, 0.42);
         }
 
-        .st-key-resumo_plano_recente {
-            padding: 1.1rem;
+        .st-key-confirmacao_plano_criado {
+            padding: 0.8rem 0.9rem;
+            margin-top: 0.8rem;
             border: 1px solid var(--academico-borda);
             border-radius: 8px;
             background-color: rgba(47, 107, 95, 0.045);
+        }
+
+        .st-key-confirmacao_plano_criado
+        [data-testid="stHorizontalBlock"] {
+            align-items: center;
         }
 
         .st-key-botao_ajuda_pontuacao {
@@ -596,8 +602,8 @@ def iniciar_estado() -> None:
 
     if "tarefas" not in st.session_state:
         st.session_state.tarefas = carregar_tarefas()
-    if "indice_plano_recente" not in st.session_state:
-        st.session_state.indice_plano_recente = None
+    if "plano_criado_titulo" not in st.session_state:
+        st.session_state.plano_criado_titulo = None
     if "indice_plano_aberto" not in st.session_state:
         st.session_state.indice_plano_aberto = None
     if "subtarefas_editaveis" not in st.session_state:
@@ -613,7 +619,7 @@ def iniciar_estado() -> None:
 def reiniciar_estado_dependente_tarefas() -> None:
     """Descarta seleções que podem apontar para índices antigos."""
 
-    st.session_state.indice_plano_recente = None
+    st.session_state.plano_criado_titulo = None
     st.session_state.indice_plano_aberto = None
     st.session_state.subtarefas_editaveis = {}
     st.session_state.editor_subtarefa = None
@@ -751,6 +757,13 @@ def cancelar_edicao_tarefa() -> None:
     """Fecha a edição sem alterar a tarefa."""
 
     st.session_state.indice_tarefa_em_edicao = None
+
+
+def ir_para_tarefas_salvas() -> None:
+    """Abre a aba de tarefas e descarta o aviso do plano criado."""
+
+    st.session_state.aba_principal = "Tarefas salvas"
+    st.session_state.plano_criado_titulo = None
 
 
 def renderizar_editor_dados_tarefa(
@@ -1607,46 +1620,29 @@ def mostrar_formulario() -> None:
     )
     st.session_state.tarefas.append(tarefa)
     salvar_tarefas(st.session_state.tarefas)
-    st.session_state.indice_plano_recente = len(st.session_state.tarefas) - 1
-    st.session_state.mensagem_sucesso = "Plano gerado e salvo com sucesso."
+    st.session_state.plano_criado_titulo = tarefa.titulo
     st.rerun()
 
 
-def mostrar_resumo_plano_recente() -> None:
-    """Mostra um resumo do último plano criado."""
+def mostrar_confirmacao_plano_criado() -> None:
+    """Mostra um retorno compacto com acesso à tarefa recém-criada."""
 
-    indice = st.session_state.indice_plano_recente
-    if indice is None or indice >= len(st.session_state.tarefas):
+    titulo = st.session_state.plano_criado_titulo
+    if not titulo:
         return
 
-    tarefa = st.session_state.tarefas[indice]
-    plano = gerar_plano(tarefa)
-
-    st.markdown("### Plano criado")
-    with st.container(key="resumo_plano_recente"):
-        st.markdown(f"#### {tarefa.titulo}")
-        st.caption(
-            "Tipo identificado: "
-            f"{formatar_tipo_tarefa(plano.tipo_identificado)}"
+    with st.container(key="confirmacao_plano_criado"):
+        mensagem, acao = st.columns([3, 1], vertical_alignment="center")
+        mensagem.success(
+            f'Plano de "{titulo}" gerado e salvo.',
+            icon=":material/check_circle:",
         )
-        coluna1, coluna2, coluna3, coluna4 = st.columns(4)
-        coluna1.metric("Urgência", plano.urgencia.capitalize())
-        coluna2.metric("Pontuação", plano.pontuacao)
-        coluna3.metric("Dias restantes", plano.dias_restantes)
-        total_etapas = (
-            len(tarefa.subtarefas_personalizadas)
-            if tarefa.subtarefas_personalizadas is not None
-            else len(plano.subtarefas)
-        )
-        coluna4.metric("Etapas", total_etapas)
-        mostrar_detalhes_tarefa(tarefa, None)
-
-        st.button(
-            "Abrir planejamento completo",
-            icon=":material/visibility:",
+        acao.button(
+            "Ver tarefas salvas",
+            icon=":material/arrow_forward:",
             type="secondary",
-            on_click=abrir_plano,
-            args=(indice,),
+            use_container_width=True,
+            on_click=ir_para_tarefas_salvas,
         )
 
 
@@ -1877,7 +1873,7 @@ def main() -> None:
 
     with aba_plano:
         mostrar_formulario()
-        mostrar_resumo_plano_recente()
+        mostrar_confirmacao_plano_criado()
 
     with aba_tarefas:
         mostrar_aba_tarefas()
