@@ -80,5 +80,30 @@
                 "ordem_logica": 10
             }
         ]
+    },
+    {
+        "titulo": "Trabalho Acadêmico Lógica Aplicada",
+        "tipo": "trabalho academico",
+        "prazo": "07/06/2026",
+        "prioridade": "alta",
+        "duracao_estimada": 9.5,
+        "descricao": "Planejador Autônomo Acadêmico",
+        "subtarefas_concluidas": [
+            "Dividir a tarefa em blocos menores de tempo.",
+            "Entender o tema proposto."
+        ],
+        "concluida": false,
+        "subtarefas_personalizadas": null
+    },
+    {
+        "titulo": "Prova de Estatística",
+        "tipo": "estudar para prova",
+        "prazo": "12/06/2026",
+        "prioridade": "media",
+        "duracao_estimada": 4.0,
+        "descricao": "Estatística",
+        "subtarefas_concluidas": [],
+        "concluida": false,
+        "subtarefas_personalizadas": null
     }
 ]
