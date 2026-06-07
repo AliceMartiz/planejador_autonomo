@@ -1,5 +1,7 @@
 """Interface visual do Planejador Autônomo Acadêmico."""
 
+from pathlib import Path
+
 import streamlit as st
 
 from componentes_subtarefas import capturar_nova_ordem
@@ -53,6 +55,8 @@ ABAS_PRINCIPAIS = [
     "Tarefas salvas",
     "Sobre o projeto",
 ]
+
+PAPER_PATH = Path(__file__).with_name("assets") / "paper_planejador_autonomo.pdf"
 
 
 def aplicar_estilos() -> None:
@@ -425,6 +429,28 @@ def aplicar_estilos() -> None:
 
         [class*="st-key-editor_subtarefa_"] textarea {
             min-height: 5.5rem;
+        }
+
+        .st-key-paper_download {
+            padding: 1rem 1.1rem;
+            margin: 1rem 0 1.15rem;
+            border: 1px solid var(--academico-borda);
+            border-left: 4px solid var(--academico-verde);
+            border-radius: 8px;
+            background-color: rgba(47, 107, 95, 0.04);
+        }
+
+        .st-key-paper_download h4 {
+            margin: 0 0 0.2rem;
+            font-size: 1.05rem;
+        }
+
+        .st-key-paper_download p {
+            margin-bottom: 0.2rem;
+        }
+
+        .st-key-paper_download button {
+            min-height: 2.65rem;
         }
 
         @media (hover: none) {
@@ -1791,6 +1817,31 @@ def mostrar_sobre_projeto() -> None:
         "em regras pode receber um objetivo amplo, avaliar critérios e "
         "produzir uma sequência organizada de ações."
     )
+
+    with st.container(key="paper_download"):
+        conteudo, acao = st.columns(
+            [2.4, 1],
+            vertical_alignment="center",
+        )
+        with conteudo:
+            st.markdown("#### Paper do projeto")
+            st.write(
+                "**Decomposição Automatizada de Metas de Estudo:** "
+                "um algoritmo baseado em agentes autônomos para "
+                "organização acadêmica."
+            )
+            st.caption("Relato de experiência · PDF · 1,19 MB")
+        with acao:
+            st.download_button(
+                "Baixar paper em PDF",
+                data=PAPER_PATH.read_bytes(),
+                file_name="paper_planejador_autonomo_academico.pdf",
+                mime="application/pdf",
+                icon=":material/download:",
+                type="primary",
+                on_click="ignore",
+                use_container_width=True,
+            )
 
     with st.expander(
         "Como o planejador toma decisões?",

@@ -1,5 +1,7 @@
 # Planejador Autônomo Acadêmico
 
+**Decomposição automatizada de metas de estudo: um algoritmo baseado em agentes autônomos para organização acadêmica**
+
 Protótipo desenvolvido em Python para a disciplina de **Lógica Aplicada**, com o objetivo de simular um **agente planejador baseado em regras lógicas**.
 
 O sistema recebe uma tarefa complexa, identifica seu tipo, calcula urgência e pontuação, divide a tarefa em subtarefas menores e apresenta uma sequência lógica de execução.
@@ -10,22 +12,28 @@ O sistema recebe uma tarefa complexa, identifica seu tipo, calcula urgência e p
 
 ## Demonstração
 
-Aplicação publicada no Streamlit:
+- [Abrir a aplicação no Streamlit](https://planejadorautonomoacademico-logicaaplicada.streamlit.app/)
+- [Acessar o código-fonte no GitHub](https://github.com/AliceMartiz/planejador_autonomo)
+- [Baixar o paper do projeto em PDF](assets/paper_planejador_autonomo.pdf)
 
-```text
-https://planejadorautonomoacademico-logicaaplicada.streamlit.app/
-```
+O paper também pode ser baixado pela aba **Sobre o projeto** da aplicação.
 
-Repositório no GitHub:
+---
 
-```text
-https://github.com/AliceMartiz/planejador_autonomo
-```
+## Entregas do workshop
+
+| Pilar da avaliação | Entrega realizada |
+|---|---|
+| **Paper** | Relato de experiência com introdução, fundamentação teórica, metodologia, resultados, discussão e referências bibliográficas. |
+| **Protótipo** | Algoritmo em Python com interface visual, interface de terminal, persistência em JSON e código organizado em módulos. |
+| **Validação** | Suíte com 38 testes automatizados, exemplos de entrada e saída e tratamento de dados inválidos. |
+| **Apresentação** | Aplicação publicada, roteiro de demonstração, fluxogramas e explicação das regras lógicas utilizadas. |
 
 ---
 
 ## Sumário
 
+- [Entregas do workshop](#entregas-do-workshop)
 - [Sobre o projeto](#sobre-o-projeto)
 - [Objetivo](#objetivo)
 - [Relação com Lógica Aplicada e IA](#relação-com-lógica-aplicada-e-ia)
@@ -42,6 +50,7 @@ https://github.com/AliceMartiz/planejador_autonomo
 - [Exemplo de entrada e saída](#exemplo-de-entrada-e-saída)
 - [Testes](#testes)
 - [Relação com o paper](#relação-com-o-paper)
+- [Fluxogramas](#fluxogramas)
 - [Limitações](#limitações)
 - [Melhorias futuras](#melhorias-futuras)
 - [Considerações éticas](#considerações-éticas)
@@ -195,6 +204,11 @@ planejador_autonomo/
 │
 ├── .streamlit/
 │   └── config.toml          # Tema visual usado pelo Streamlit
+├── assets/
+│   ├── paper_planejador_autonomo.pdf       # Paper do projeto
+│   ├── fluxograma_geral_planejador_autonomo.svg
+│   ├── fluxograma_logica_planejamento.svg
+│   └── fluxograma_json_salvamento.svg
 ├── app.py                  # Interface visual com Streamlit
 ├── componentes_subtarefas.py # Componente de arrastar e soltar
 ├── main.py                 # Interface de terminal
@@ -301,6 +315,13 @@ Após o preenchimento, o sistema gera um plano contendo:
 - justificativa;
 - lista de subtarefas em ordem recomendada.
 
+Para interpretar a saída:
+
+- **urgência** resume a proximidade do prazo;
+- **pontuação** permite comparar o nível de atenção exigido pelas tarefas;
+- **justificativa** explica as regras aplicadas pelo algoritmo;
+- **etapas recomendadas** apresentam a ordem sugerida para executar a tarefa.
+
 Na versão de terminal, tarefas cadastradas e exemplos novos são salvos
 automaticamente. A opção de salvamento manual permanece disponível para
 confirmar a persistência quando necessário.
@@ -345,13 +366,14 @@ Essa separação mostra a ideia de **decomposição de problemas em funções me
 
 Uma demonstração curta pode seguir esta ordem:
 
-1. cadastrar uma tarefa e explicar os dados de entrada;
-2. mostrar urgência, pontuação e justificativa;
-3. abrir o plano e marcar uma subtarefa como concluída;
-4. editar, adicionar e reordenar uma subtarefa;
+1. apresentar o problema e explicar por que tarefas amplas precisam ser decompostas;
+2. cadastrar uma tarefa e explicar os dados de entrada;
+3. mostrar urgência, pontuação, justificativa e etapas geradas;
+4. marcar, editar, adicionar e reordenar uma subtarefa;
 5. apresentar os filtros e a ordenação das tarefas;
 6. mostrar o arquivo `tarefas.json` e explicar a persistência;
-7. executar os testes com `python -m unittest discover -s tests`.
+7. executar os testes com `python -m unittest discover -s tests`;
+8. concluir destacando que o comportamento é baseado em regras lógicas explicáveis.
 
 Na explicação do código, a sequência recomendada é:
 `models.py` → `validators.py` → `planner.py` → `storage.py` →
@@ -462,7 +484,8 @@ seguindo para execução e terminando em revisão.
 
 ## Testes
 
-O projeto possui testes automatizados para verificar partes importantes do sistema.
+O projeto possui **38 testes automatizados** para verificar as regras lógicas,
+a persistência dos dados e as principais operações das interfaces.
 
 Para executar:
 
@@ -489,7 +512,10 @@ Os testes cobrem:
 
 ## Relação com o paper
 
-Este projeto pode ser explicado no paper como um **relato de experiência técnica** sobre a construção de um agente planejador simples.
+O desenvolvimento está documentado no
+[paper do projeto](assets/paper_planejador_autonomo.pdf), apresentado como um
+**relato de experiência técnica** sobre a construção de um agente planejador
+baseado em regras.
 
 ### Introdução
 
@@ -639,8 +665,8 @@ Atualmente, o sistema possui:
 - versão de terminal;
 - regras lógicas implementadas;
 - armazenamento em JSON;
-- testes automatizados;
-- documentação inicial.
+- 38 testes automatizados;
+- paper, fluxogramas e documentação de reprodução.
 
 ---
 
