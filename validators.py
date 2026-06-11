@@ -8,6 +8,7 @@ PRIORIDADES = ("baixa", "media", "alta")
 PRIORIDADES_VALIDAS = frozenset(PRIORIDADES)
 
 ROTULOS_TIPOS_TAREFA = {
+    "detectar automaticamente": "Detectar automaticamente",
     "trabalho academico": "Trabalho acadêmico",
     "estudar para prova": "Estudar para prova",
     "apresentacao": "Apresentação",

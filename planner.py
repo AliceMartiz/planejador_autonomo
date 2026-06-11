@@ -18,6 +18,7 @@ from validators import (
 
 
 SubtarefaModelo = tuple[str, str, str]
+TIPO_DETECCAO_AUTOMATICA = "detectar automaticamente"
 
 
 SUBTAREFAS_PRE_DEFINIDAS: dict[str, list[SubtarefaModelo]] = {
@@ -180,8 +181,9 @@ SUBTAREFAS_PRE_DEFINIDAS: dict[str, list[SubtarefaModelo]] = {
     ],
 }
 
-# As duas interfaces usam esta mesma lista para evitar opções divergentes.
+# Tipos que possuem um modelo de subtarefas próprio.
 TIPOS_DISPONIVEIS = tuple(SUBTAREFAS_PRE_DEFINIDAS)
+OPCOES_TIPO_TAREFA = (TIPO_DETECCAO_AUTOMATICA, *TIPOS_DISPONIVEIS)
 
 
 PALAVRAS_CHAVE_TIPO = {
@@ -264,17 +266,15 @@ def identificar_tipo(tarefa: Tarefa) -> str:
     tipo_informado = normalizar_texto(tarefa.tipo)
     texto_busca = normalizar_texto(f"{tarefa.titulo} {tarefa.descricao} {tarefa.tipo}")
 
-    # Um tipo específico escolhido pelo usuário tem prioridade. "Personalizada"
-    # funciona como fallback e ainda permite a classificação por palavras-chave.
-    if (
-        tipo_informado in SUBTAREFAS_PRE_DEFINIDAS
-        and tipo_informado != "personalizada"
-    ):
+    # Uma categoria escolhida pelo usuário tem prioridade. A busca por
+    # palavras-chave ocorre somente quando a detecção automática está ativa.
+    if tipo_informado in SUBTAREFAS_PRE_DEFINIDAS:
         return tipo_informado
 
-    for tipo, palavras in PALAVRAS_CHAVE_TIPO.items():
-        if any(palavra in texto_busca for palavra in palavras):
-            return tipo
+    if tipo_informado == TIPO_DETECCAO_AUTOMATICA:
+        for tipo, palavras in PALAVRAS_CHAVE_TIPO.items():
+            if any(palavra in texto_busca for palavra in palavras):
+                return tipo
 
     return "personalizada"
 

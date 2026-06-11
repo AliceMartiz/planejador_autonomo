@@ -3,7 +3,7 @@
 from pathlib import Path
 
 from models import Tarefa
-from planner import TIPOS_DISPONIVEIS, gerar_plano
+from planner import OPCOES_TIPO_TAREFA, gerar_plano
 from storage import ARQUIVO_PADRAO, carregar_tarefas, salvar_tarefas
 from validators import (
     PRIORIDADES,
@@ -78,15 +78,15 @@ def escolher_tipo() -> str:
     """Permite escolher o tipo de tarefa por número."""
 
     print("\nTipos disponíveis:")
-    for indice, tipo in enumerate(TIPOS_DISPONIVEIS, start=1):
+    for indice, tipo in enumerate(OPCOES_TIPO_TAREFA, start=1):
         print(f"{indice}. {formatar_tipo_tarefa(tipo)}")
 
     while True:
         escolha = input("Escolha o tipo pelo número: ").strip()
         if escolha.isdigit():
             indice = int(escolha)
-            if 1 <= indice <= len(TIPOS_DISPONIVEIS):
-                return TIPOS_DISPONIVEIS[indice - 1]
+            if 1 <= indice <= len(OPCOES_TIPO_TAREFA):
+                return OPCOES_TIPO_TAREFA[indice - 1]
         print("Opção inválida. Tente novamente.")
 
 

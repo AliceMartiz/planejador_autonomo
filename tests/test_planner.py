@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from models import Subtarefa, Tarefa
 from planner import (
+    TIPO_DETECCAO_AUTOMATICA,
     calcular_dias_restantes,
     calcular_pontuacao,
     classificar_urgencia,
@@ -50,10 +51,10 @@ class TestPlanner(unittest.TestCase):
         self.assertGreater(len(subtarefas), 0)
         self.assertEqual(subtarefas[0].nome, "Entender o tema proposto.")
 
-    def test_identifica_tipo_por_palavra_chave_quando_personalizada(self):
+    def test_identifica_tipo_por_palavra_chave_na_deteccao_automatica(self):
         tarefa = Tarefa(
             titulo="Estudar p/ prova de Lógica Aplicada",
-            tipo="personalizada",
+            tipo=TIPO_DETECCAO_AUTOMATICA,
             prazo="18/06/2026",
             prioridade="media",
             duracao_estimada=5,
@@ -61,9 +62,20 @@ class TestPlanner(unittest.TestCase):
 
         self.assertEqual(identificar_tipo(tarefa), "estudar para prova")
 
-    def test_mantem_personalizada_sem_palavra_chave_conhecida(self):
+    def test_deteccao_automatica_usa_personalizada_sem_palavra_conhecida(self):
         tarefa = Tarefa(
             titulo="Organizar documentos pessoais",
+            tipo=TIPO_DETECCAO_AUTOMATICA,
+            prazo="18/06/2026",
+            prioridade="media",
+            duracao_estimada=2,
+        )
+
+        self.assertEqual(identificar_tipo(tarefa), "personalizada")
+
+    def test_personalizada_escolhida_nao_e_reclassificada(self):
+        tarefa = Tarefa(
+            titulo="Estudar para prova de Lógica Aplicada",
             tipo="personalizada",
             prazo="18/06/2026",
             prioridade="media",

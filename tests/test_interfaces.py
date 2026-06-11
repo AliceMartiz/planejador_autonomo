@@ -18,12 +18,13 @@ from ui_tarefas import (
 )
 from main import (
     adicionar_tarefas_sem_duplicar,
+    escolher_tipo,
     escolher_tarefa,
     executar_menu,
     excluir_tarefa,
 )
 from models import Tarefa
-from planner import gerar_plano
+from planner import OPCOES_TIPO_TAREFA, gerar_plano
 from validators import (
     PRIORIDADES,
     formatar_prioridade,
@@ -71,6 +72,10 @@ class TestExclusaoTerminal(unittest.TestCase):
 
 class TestNavegacaoTerminal(unittest.TestCase):
     """Testa saídas e persistência do menu de terminal."""
+
+    @patch("builtins.input", return_value="1")
+    def test_permite_escolher_deteccao_automatica(self, _):
+        self.assertEqual(escolher_tipo(), "detectar automaticamente")
 
     @patch("builtins.input", return_value="0")
     def test_permite_cancelar_escolha_de_tarefa(self, _):
@@ -271,6 +276,10 @@ class TestFormatacaoInterface(unittest.TestCase):
 
     def test_prioridades_mantem_ordem_da_interface(self):
         self.assertEqual(PRIORIDADES, ("baixa", "media", "alta"))
+
+    def test_opcoes_de_tipo_incluem_deteccao_e_personalizada(self):
+        self.assertEqual(OPCOES_TIPO_TAREFA[0], "detectar automaticamente")
+        self.assertIn("personalizada", OPCOES_TIPO_TAREFA)
 
     def test_formata_tipos_com_acentos(self):
         self.assertEqual(

@@ -26,7 +26,7 @@ O paper também pode ser baixado pela aba **Sobre o projeto** da aplicação.
 |---|---|
 | **Paper** | Relato de experiência com introdução, fundamentação teórica, metodologia, resultados, discussão e referências bibliográficas. |
 | **Protótipo** | Algoritmo em Python com interface visual, interface de terminal, persistência em JSON e código organizado em módulos. |
-| **Validação** | Suíte com 41 testes automatizados, exemplos de entrada e saída e tratamento de dados inválidos. |
+| **Validação** | Suíte com 44 testes automatizados, exemplos de entrada e saída e tratamento de dados inválidos. |
 | **Apresentação** | Aplicação publicada, roteiro de demonstração, fluxogramas e explicação das regras lógicas utilizadas. |
 
 ---
@@ -301,7 +301,7 @@ Na interface visual, o usuário deve preencher:
 
 1. **Tarefa principal**: nome geral da tarefa;
 2. **Descrição**: explicação curta sobre o que precisa ser feito;
-3. **Tipo da tarefa**: categoria escolhida pelo usuário;
+3. **Tipo da tarefa**: categoria escolhida pelo usuário ou detecção automática;
 4. **Prazo**: data limite para realização;
 5. **Prioridade**: baixa, média ou alta;
 6. **Duração estimada**: quantidade aproximada de horas necessárias.
@@ -321,6 +321,11 @@ Para interpretar a saída:
 - **pontuação** permite comparar o nível de atenção exigido pelas tarefas;
 - **justificativa** explica as regras aplicadas pelo algoritmo;
 - **etapas recomendadas** apresentam a ordem sugerida para executar a tarefa.
+
+Em **Detectar automaticamente**, o sistema procura palavras-chave no título e
+na descrição. Quando não encontra uma categoria conhecida, utiliza o modelo
+**Personalizada**. A opção **Personalizada** também pode ser escolhida
+diretamente quando o usuário deseja forçar o plano genérico.
 
 Na versão de terminal, tarefas cadastradas e exemplos novos são salvos
 automaticamente. A opção de salvamento manual permanece disponível para
@@ -484,7 +489,7 @@ seguindo para execução e terminando em revisão.
 
 ## Testes
 
-O projeto possui **41 testes automatizados** para verificar as regras lógicas,
+O projeto possui **44 testes automatizados** para verificar as regras lógicas,
 a persistência dos dados e as principais operações das interfaces.
 
 Para executar:
@@ -665,7 +670,7 @@ Atualmente, o sistema possui:
 - versão de terminal;
 - regras lógicas implementadas;
 - armazenamento em JSON;
-- 41 testes automatizados;
+- 44 testes automatizados;
 - paper, fluxogramas e documentação de reprodução.
 
 ---
