@@ -264,7 +264,12 @@ def identificar_tipo(tarefa: Tarefa) -> str:
     tipo_informado = normalizar_texto(tarefa.tipo)
     texto_busca = normalizar_texto(f"{tarefa.titulo} {tarefa.descricao} {tarefa.tipo}")
 
-    if tipo_informado in SUBTAREFAS_PRE_DEFINIDAS:
+    # Um tipo específico escolhido pelo usuário tem prioridade. "Personalizada"
+    # funciona como fallback e ainda permite a classificação por palavras-chave.
+    if (
+        tipo_informado in SUBTAREFAS_PRE_DEFINIDAS
+        and tipo_informado != "personalizada"
+    ):
         return tipo_informado
 
     for tipo, palavras in PALAVRAS_CHAVE_TIPO.items():

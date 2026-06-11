@@ -6,7 +6,7 @@ import streamlit as st
 
 from componentes_subtarefas import capturar_nova_ordem
 from models import Tarefa
-from planner import TIPOS_DISPONIVEIS, gerar_plano
+from planner import TIPOS_DISPONIVEIS, gerar_plano, identificar_tipo
 from storage import carregar_tarefas, salvar_tarefas
 from ui_tarefas import (
     atualizar_dados_planejamento,
@@ -1587,8 +1587,16 @@ def mostrar_formulario() -> None:
         tipo = coluna_tipo.selectbox(
             "Tipo da tarefa",
             TIPOS_DISPONIVEIS,
-            format_func=formatar_tipo_tarefa,
-            help="Escolha a categoria que mais se aproxima do objetivo.",
+            index=TIPOS_DISPONIVEIS.index("personalizada"),
+            format_func=lambda valor: (
+                "Detectar automaticamente"
+                if valor == "personalizada"
+                else formatar_tipo_tarefa(valor)
+            ),
+            help=(
+                "Escolha uma categoria ou mantenha a detecção automática para o "
+                "planejador tentar identificar o tipo pelo título e descrição."
+            ),
         )
         prioridade = coluna_prioridade.selectbox(
             "Prioridade",
@@ -1712,7 +1720,7 @@ def mostrar_tarefas_cadastradas(
         for indice, tarefa in tarefas_visiveis:
             valores = [
                 tarefa.titulo,
-                formatar_tipo_tarefa(tarefa.tipo),
+                formatar_tipo_tarefa(identificar_tipo(tarefa)),
                 tarefa.prazo,
                 formatar_prioridade(tarefa.prioridade),
                 f"{tarefa.duracao_estimada:g}",

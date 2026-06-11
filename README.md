@@ -26,7 +26,7 @@ O paper também pode ser baixado pela aba **Sobre o projeto** da aplicação.
 |---|---|
 | **Paper** | Relato de experiência com introdução, fundamentação teórica, metodologia, resultados, discussão e referências bibliográficas. |
 | **Protótipo** | Algoritmo em Python com interface visual, interface de terminal, persistência em JSON e código organizado em módulos. |
-| **Validação** | Suíte com 38 testes automatizados, exemplos de entrada e saída e tratamento de dados inválidos. |
+| **Validação** | Suíte com 41 testes automatizados, exemplos de entrada e saída e tratamento de dados inválidos. |
 | **Apresentação** | Aplicação publicada, roteiro de demonstração, fluxogramas e explicação das regras lógicas utilizadas. |
 
 ---
@@ -484,7 +484,7 @@ seguindo para execução e terminando em revisão.
 
 ## Testes
 
-O projeto possui **38 testes automatizados** para verificar as regras lógicas,
+O projeto possui **41 testes automatizados** para verificar as regras lógicas,
 a persistência dos dados e as principais operações das interfaces.
 
 Para executar:
@@ -665,7 +665,7 @@ Atualmente, o sistema possui:
 - versão de terminal;
 - regras lógicas implementadas;
 - armazenamento em JSON;
-- 38 testes automatizados;
+- 41 testes automatizados;
 - paper, fluxogramas e documentação de reprodução.
 
 ---

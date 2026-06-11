@@ -15,6 +15,7 @@ from planner import (
     classificar_urgencia,
     gerar_plano,
     gerar_subtarefas,
+    identificar_tipo,
     ordenar_subtarefas,
 )
 
@@ -48,6 +49,39 @@ class TestPlanner(unittest.TestCase):
 
         self.assertGreater(len(subtarefas), 0)
         self.assertEqual(subtarefas[0].nome, "Entender o tema proposto.")
+
+    def test_identifica_tipo_por_palavra_chave_quando_personalizada(self):
+        tarefa = Tarefa(
+            titulo="Estudar p/ prova de Lógica Aplicada",
+            tipo="personalizada",
+            prazo="18/06/2026",
+            prioridade="media",
+            duracao_estimada=5,
+        )
+
+        self.assertEqual(identificar_tipo(tarefa), "estudar para prova")
+
+    def test_mantem_personalizada_sem_palavra_chave_conhecida(self):
+        tarefa = Tarefa(
+            titulo="Organizar documentos pessoais",
+            tipo="personalizada",
+            prazo="18/06/2026",
+            prioridade="media",
+            duracao_estimada=2,
+        )
+
+        self.assertEqual(identificar_tipo(tarefa), "personalizada")
+
+    def test_tipo_especifico_informado_tem_prioridade(self):
+        tarefa = Tarefa(
+            titulo="Preparar prova do artigo",
+            tipo="apresentacao",
+            prazo="18/06/2026",
+            prioridade="media",
+            duracao_estimada=2,
+        )
+
+        self.assertEqual(identificar_tipo(tarefa), "apresentacao")
 
     def test_ordenacao_das_subtarefas(self):
         subtarefas = [
