@@ -1,4 +1,4 @@
-# Planejador Autônomo Acadêmico
+# Planejador Autônomo Acadêmico (Feito com ajuda do CODEX)
 
 **Decomposição automatizada de metas de estudo: um algoritmo baseado em agentes autônomos para organização acadêmica**
 
